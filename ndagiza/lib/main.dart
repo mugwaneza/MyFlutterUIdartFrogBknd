@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ndagiza/pages/aborozi/guhuza_amatungo_aborozi.dart';
 import 'package:ndagiza/pages/amatungo/kwinjiza_itungo_form.dart';
 import 'package:ndagiza/pages/aborozi/Aborozilist.dart';
 
@@ -531,7 +532,15 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                // Navigate to AnimalAssignmentPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Guhuza_amatungo_aborozi(),
+                  ),
+                );
+              },
               child: const Text('Bika'),
             ),
           ],
