@@ -3,6 +3,8 @@ import 'package:ndagiza/pages/aborozi/Kwinjiza_aborozi.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:ndagiza/statics/ApiUrls.dart';
+
 class AboroziList extends StatefulWidget {
   const AboroziList({super.key});
 
@@ -23,7 +25,7 @@ class _AboroziListState extends State<AboroziList> {
 
   Future<void> fetchAboroziList() async {
     final response = await http.get(
-      Uri.parse('http://127.0.0.1:8080/aborozi/lisiti_aborozi'),
+      Uri.parse(ApiUrls.fetchListAborozi),
     );
 
     if (response.statusCode == 200) {

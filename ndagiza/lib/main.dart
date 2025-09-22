@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndagiza/pages/aborozi/guhuza_amatungo_aborozi.dart';
 import 'package:ndagiza/pages/amatungo/kwinjiza_itungo_form.dart';
 import 'package:ndagiza/pages/aborozi/Aborozilist.dart';
+import 'package:ndagiza/statics/ApiUrls.dart';
 
 void main() {
   runApp(const MyApp());
@@ -320,8 +321,7 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
 
   Future<void> fetchAmatungoList() async {
     final response = await http.get(
-      Uri.parse(
-          'http://127.0.0.1:8080/amatungo/amatungo_aborozi/lisitiamatungoaborozi'),
+      Uri.parse(ApiUrls.fetchListAmatungo),
     );
 
     if (response.statusCode == 200) {
@@ -409,79 +409,90 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
                 final guardianPresent = itungo['guardian'] != null &&
                     itungo['guardian']!.trim().isNotEmpty;
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            itungo['image']!,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            Guhuza_amatungo_aborozi(), // pass the data
+                      ),
+                    );
+                  },
+                  child: Card(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              itungo['image']!,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Table(
-                            columnWidths: const {
-                              0: FlexColumnWidth(),
-                              1: FlexColumnWidth(),
-                            },
-                            children: [
-                              TableRow(children: [
-                                _buildField("Ibara", itungo['name']),
-                                _buildField("Igitsina", itungo['gender']),
-                              ]),
-                              TableRow(children: [
-                                _buildField("Igiciro", itungo['price']),
-                                _buildField("Ubukure", itungo['age']),
-                              ]),
-                              TableRow(children: [
-                                _buildField(
-                                    "Imyororokere", itungo['reproduction']),
-                                _buildField(
-                                    "Igihe ryaziye", itungo['arrival_date']),
-                              ]),
-                              TableRow(children: [
-                                _buildField("Ushinzwe", itungo['guardian']),
-                                _buildField("Code", itungo['code']),
-                              ]),
-                            ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(),
+                                1: FlexColumnWidth(),
+                              },
+                              children: [
+                                TableRow(children: [
+                                  _buildField("Ibara", itungo['name']),
+                                  _buildField("Igitsina", itungo['gender']),
+                                ]),
+                                TableRow(children: [
+                                  _buildField("Igiciro", itungo['price']),
+                                  _buildField("Ubukure", itungo['age']),
+                                ]),
+                                TableRow(children: [
+                                  _buildField(
+                                      "Imyororokere", itungo['reproduction']),
+                                  _buildField(
+                                      "Igihe ryaziye", itungo['arrival_date']),
+                                ]),
+                                TableRow(children: [
+                                  _buildField("Ushinzwe", itungo['guardian']),
+                                  _buildField("Code", itungo['code']),
+                                ]),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 100, // Match image height
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: guardianPresent
-                                ? Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green,
-                                    size: 28,
-                                  )
-                                : GestureDetector(
-                                    onTap: () {
-                                      _showAssignGuardianDialog(
-                                          context, itungo);
-                                    },
-                                    child: Icon(
+                          SizedBox(
+                            height: 100, // Match image height
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: !guardianPresent
+                                  ? Icon(
                                       Icons.add_circle,
-                                      color: Colors.orange,
+                                      color: Colors.green,
                                       size: 28,
+                                    )
+                                  : GestureDetector(
+                                      onTap: () {
+                                        _showAssignGuardianDialog(
+                                            context, itungo);
+                                      },
+                                      child: Icon(
+                                        Icons.check_circle,
+                                        color: Colors.orange,
+                                        size: 28,
+                                      ),
                                     ),
-                                  ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -523,7 +534,7 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
       builder: (context) {
         final controller = TextEditingController();
         return AlertDialog(
-          title: const Text('Shyiramo ushinzwe'),
+          title: const Text('Abashinzwe itungo'),
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
@@ -533,15 +544,9 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
           actions: [
             TextButton(
               onPressed: () {
-                // Navigate to AnimalAssignmentPage
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const Guhuza_amatungo_aborozi(),
-                  ),
-                );
+                Navigator.pop(context);
               },
-              child: const Text('Bika'),
+              child: const Text('Ok'),
             ),
           ],
         );

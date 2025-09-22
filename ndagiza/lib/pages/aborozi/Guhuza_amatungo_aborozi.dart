@@ -1,29 +1,20 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:ndagiza/statics/ApiUrls.dart';
 
 class Guhuza_amatungo_aborozi extends StatefulWidget {
   const Guhuza_amatungo_aborozi({super.key});
 
   @override
-  State<Guhuza_amatungo_aborozi> createState() =>
-      _Guhuza_amatungo_aboroziState();
+  State<Guhuza_amatungo_aborozi> createState() => _GuhuzaAmatungoAboroziState();
 }
 
-class _Guhuza_amatungo_aboroziState extends State<Guhuza_amatungo_aborozi> {
-  final List<String> animals = [
-    "Cow",
-    "Goat",
-    "Sheep",
-    "Dog",
-    "Cat",
-    "Horse",
-    "Donkey"
-  ];
-  final List<String> farmers = ["Farmer A", "Farmer B", "Farmer C", "Farmer D"];
-  final List<String> supervisors = [
-    "Supervisor X",
-    "Supervisor Y",
-    "Supervisor Z"
-  ];
+class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
+  List<Map<String, dynamic>> AmatungoList = [];
+  List<Map<String, dynamic>> AllListAborozi = [];
+  List<Map<String, dynamic>> Aborozi = [];
+  List<Map<String, dynamic>> Abishingizi = [];
 
   String? selectedAnimal;
   String? selectedFarmer;
@@ -31,20 +22,117 @@ class _Guhuza_amatungo_aboroziState extends State<Guhuza_amatungo_aborozi> {
 
   final List<Map<String, dynamic>> assignments = [];
 
+  @override
+  void initState() {
+    super.initState();
+    fetchAmatungoList();
+    fetchAboroziList();
+  }
+
+  Future<void> fetchAmatungoList() async {
+    try {
+      final response = await http.get(Uri.parse(ApiUrls.fetchListAmatungo));
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> data = decoded is List ? decoded : [];
+
+        setState(() {
+          AmatungoList = data
+              .where((item) => item is Map)
+              .map<Map<String, dynamic>>((item) {
+            final mapItem = Map<String, dynamic>.from(item as Map);
+            mapItem['itunguui'] = (mapItem['itunguui'] ?? '').toString();
+            mapItem['itngcode'] = (mapItem['itngcode'] ?? '').toString();
+            mapItem['ibara'] = (mapItem['ibara'] ?? '').toString();
+
+            return mapItem;
+          }).toList();
+
+          selectedAnimal =
+              AmatungoList.isNotEmpty ? AmatungoList.first['itunguui'] : null;
+        });
+      } else {
+        print('Failed to load Amatungo data: ${response.statusCode}');
+      }
+    } catch (e, st) {
+      print('Error fetching AmatungoList: $e\n$st');
+      setState(() {
+        AmatungoList = [];
+        selectedAnimal = null;
+      });
+    }
+  }
+
+  Future<void> fetchAboroziList() async {
+    try {
+      final response = await http.get(Uri.parse(ApiUrls.fetchListAborozi));
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> data = decoded is List ? decoded : [];
+
+        setState(() {
+          AllListAborozi = data
+              .map((item) => {
+                    'abshuui': item[0].toString(),
+                    'name': item[1].toString() +
+                        " " +
+                        item[2].toString() +
+                        "(" +
+                        item[6].toString() +
+                        "/" +
+                        item[7].toString() +
+                        ")",
+                    'duty': item[9].toString()
+                  })
+              .toList();
+
+          Aborozi =
+              AllListAborozi.where((u) => u['duty'] == 'Umworozi').toList();
+          Abishingizi =
+              AllListAborozi.where((u) => u['duty'] == 'Uhagarariye itungo')
+                  .toList();
+
+          // Auto-select first
+          selectedFarmer = Aborozi.isNotEmpty ? Aborozi.first['abshuui'] : null;
+          selectedSupervisor =
+              Abishingizi.isNotEmpty ? Abishingizi.first['abshuui'] : null;
+        });
+      } else {
+        print('Error fetching Aborozi: ${response.statusCode}');
+      }
+    } catch (e, st) {
+      print('Exception fetching AboroziList: $e\n$st');
+      setState(() {
+        Aborozi = [];
+        Abishingizi = [];
+        selectedFarmer = null;
+        selectedSupervisor = null;
+      });
+    }
+  }
+
   void assignAnimal() {
     if (selectedAnimal != null &&
         selectedFarmer != null &&
         selectedSupervisor != null) {
       setState(() {
         assignments.add({
-          "animal": selectedAnimal,
-          "farmer": selectedFarmer,
-          "supervisor": selectedSupervisor,
-          "date": DateTime.now(),
+          "itungo": selectedAnimal,
+          "umworozi": selectedFarmer,
+          "umwishingizi": selectedSupervisor,
+          "itariki": DateTime.now(),
         });
-        selectedAnimal = null;
-        selectedFarmer = null;
-        selectedSupervisor = null;
+
+        // Reset selections
+        selectedAnimal =
+            AmatungoList.isNotEmpty ? AmatungoList.first['itunguui'] : null;
+        selectedFarmer = Aborozi.isNotEmpty ? Aborozi.first['abshuui'] : null;
+        selectedSupervisor =
+            Abishingizi.isNotEmpty ? Abishingizi.first['abshuui'] : null;
+
+        Aborozi.clear();
+        Abishingizi.clear();
+        AmatungoList.clear();
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -57,53 +145,57 @@ class _Guhuza_amatungo_aboroziState extends State<Guhuza_amatungo_aborozi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Guhuza Amatungo n'Aborozi",
-          style: TextStyle(color: Colors.white),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text("Kuragiza Amatungo",
+            style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green,
-        elevation: 2,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Animal combo
             BorderedSearchDropdown(
-              label: "Animal",
-              items: animals,
+              label: "Amatungo",
+              items: AmatungoList.map((a) => {
+                    'value': (a['itunguui'] ?? '').toString(),
+                    'display': (a['itngcode'] ?? '').toString() +
+                        "(" +
+                        (a['ibara'] ?? '').toString() +
+                        ")"
+                  }).toList(),
               selectedValue: selectedAnimal,
               onChanged: (val) => setState(() => selectedAnimal = val),
             ),
             const SizedBox(height: 12),
-            // Farmer combo
             BorderedSearchDropdown(
-              label: "Farmer",
-              items: farmers,
+              label: "Aborozi",
+              items: Aborozi.map((f) => {
+                    'value': (f['abshuui'] ?? '').toString(),
+                    'display': (f['name'] ?? '').toString()
+                  }).toList(),
               selectedValue: selectedFarmer,
               onChanged: (val) => setState(() => selectedFarmer = val),
             ),
             const SizedBox(height: 12),
-            // Supervisor combo
             BorderedSearchDropdown(
-              label: "Supervisor",
-              items: supervisors,
+              label: "Abishingizi",
+              items: Abishingizi.map((f) => {
+                    'value': (f['abshuui'] ?? '').toString(),
+                    'display': (f['name'] ?? '').toString()
+                  }).toList(),
               selectedValue: selectedSupervisor,
               onChanged: (val) => setState(() => selectedSupervisor = val),
             ),
             const SizedBox(height: 16),
-
             ElevatedButton.icon(
               onPressed: assignAnimal,
               icon: const Icon(Icons.check),
-              label: const Text("Assign"),
+              label: const Text("Ragiza"),
             ),
             const SizedBox(height: 16),
-
             Expanded(
               child: assignments.isEmpty
-                  ? const Center(child: Text("No assignments yet"))
+                  ? const Center(child: Text("Nta ndagizo zihari"))
                   : ListView.builder(
                       itemCount: assignments.length,
                       itemBuilder: (context, index) {
@@ -112,17 +204,17 @@ class _Guhuza_amatungo_aboroziState extends State<Guhuza_amatungo_aborozi> {
                           margin: const EdgeInsets.symmetric(vertical: 6),
                           child: ListTile(
                             leading: const Icon(Icons.pets),
-                            title: Text("${a['animal']} assigned"),
+                            title: Text("Itungo: ${a['itungo']}"),
                             subtitle: Text(
-                              "Farmer: ${a['farmer']}\n"
-                              "Supervisor: ${a['supervisor']}\n"
-                              "Date: ${a['date'].toString().split('.')[0]}",
+                              "Umworozi: ${a['umworozi']}\n"
+                              "Umwishingizi: ${a['umwishingizi']}\n"
+                              "Itariki byabereye: ${a['itariki'].toString().split('.')[0]}",
                             ),
                           ),
                         );
                       },
                     ),
-            ),
+            )
           ],
         ),
       ),
@@ -130,10 +222,10 @@ class _Guhuza_amatungo_aboroziState extends State<Guhuza_amatungo_aborozi> {
   }
 }
 
-/// Custom widget: one rectangle containing search + dropdown
+/// Custom searchable dropdown with auto-select first filtered item
 class BorderedSearchDropdown extends StatefulWidget {
   final String label;
-  final List<String> items;
+  final List<Map<String, String>> items;
   final String? selectedValue;
   final ValueChanged<String?> onChanged;
 
@@ -154,15 +246,16 @@ class _BorderedSearchDropdownState extends State<BorderedSearchDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter items
-    final filteredItems = widget.items
-        .where((item) => item.toLowerCase().contains(search.toLowerCase()))
-        .toList();
+    final filteredItems = widget.items.where((item) {
+      final display = item['display'] ?? '';
+      return display.toLowerCase().contains(search.toLowerCase());
+    }).toList();
 
-    // Auto-select first match if current value invalid
-    final selected = filteredItems.contains(widget.selectedValue)
-        ? widget.selectedValue
-        : (filteredItems.isNotEmpty ? filteredItems.first : null);
+    // Auto-select first filtered item
+    String? selected =
+        filteredItems.any((item) => item['value'] == widget.selectedValue)
+            ? widget.selectedValue
+            : (filteredItems.isNotEmpty ? filteredItems.first['value'] : null);
 
     if (selected != widget.selectedValue) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -193,9 +286,12 @@ class _BorderedSearchDropdownState extends State<BorderedSearchDropdown> {
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             ),
-            items: filteredItems
-                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                .toList(),
+            items: filteredItems.map((item) {
+              return DropdownMenuItem<String>(
+                value: item['value'],
+                child: Text(item['display'] ?? ''),
+              );
+            }).toList(),
             onChanged: widget.onChanged,
           ),
         ],
