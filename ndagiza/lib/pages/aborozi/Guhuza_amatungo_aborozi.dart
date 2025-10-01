@@ -4,14 +4,16 @@ import 'package:http/http.dart' as http;
 import 'package:ndagiza/statics/ApiUrls.dart';
 
 class Guhuza_amatungo_aborozi extends StatefulWidget {
-  const Guhuza_amatungo_aborozi({super.key});
+  final Map<String, dynamic> clickedItem;
+
+  const Guhuza_amatungo_aborozi({super.key, required this.clickedItem});
 
   @override
   State<Guhuza_amatungo_aborozi> createState() => _GuhuzaAmatungoAboroziState();
 }
 
 class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
-  List<Map<String, dynamic>> AmatungoList = [];
+  List<Map<String, String>> AmatungoList = [];
   List<Map<String, dynamic>> AllListAborozi = [];
   List<Map<String, dynamic>> Aborozi = [];
   List<Map<String, dynamic>> Abishingizi = [];
@@ -25,42 +27,17 @@ class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
   @override
   void initState() {
     super.initState();
-    fetchAmatungoList();
+    print("Clicked animal>>>>>>>>>>>>>>: ${widget.clickedItem['code']}");
+    print("itunguui itunguui>>>>>>>>>>>>>>: ${widget.clickedItem['itunguui']}");
+
+    AmatungoList.add({
+      'value': widget.clickedItem['itunguui']?.toString() ?? '',
+      'display':
+          "${widget.clickedItem['code'] ?? ''} (${widget.clickedItem['name'] ?? ''})",
+    });
+    selectedAnimal = widget.clickedItem['itunguui']?.toString();
+
     fetchAboroziList();
-  }
-
-  Future<void> fetchAmatungoList() async {
-    try {
-      final response = await http.get(Uri.parse(ApiUrls.fetchListAmatungo));
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        final List<dynamic> data = decoded is List ? decoded : [];
-
-        setState(() {
-          AmatungoList = data
-              .where((item) => item is Map)
-              .map<Map<String, dynamic>>((item) {
-            final mapItem = Map<String, dynamic>.from(item as Map);
-            mapItem['itunguui'] = (mapItem['itunguui'] ?? '').toString();
-            mapItem['itngcode'] = (mapItem['itngcode'] ?? '').toString();
-            mapItem['ibara'] = (mapItem['ibara'] ?? '').toString();
-
-            return mapItem;
-          }).toList();
-
-          selectedAnimal =
-              AmatungoList.isNotEmpty ? AmatungoList.first['itunguui'] : null;
-        });
-      } else {
-        print('Failed to load Amatungo data: ${response.statusCode}');
-      }
-    } catch (e, st) {
-      print('Error fetching AmatungoList: $e\n$st');
-      setState(() {
-        AmatungoList = [];
-        selectedAnimal = null;
-      });
-    }
   }
 
   Future<void> fetchAboroziList() async {
@@ -77,25 +54,27 @@ class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
                     'name': item[1].toString() +
                         " " +
                         item[2].toString() +
-                        "(" +
+                        " (" +
                         item[6].toString() +
-                        "/" +
-                        item[7].toString() +
+                        (item[7] != null && item[7].toString().isNotEmpty
+                            ? "/" + item[7].toString()
+                            : "") +
                         ")",
-                    'duty': item[9].toString()
+                    'duty': item[9].toString(),
                   })
               .toList();
 
           Aborozi =
               AllListAborozi.where((u) => u['duty'] == 'Umworozi').toList();
+
           Abishingizi =
               AllListAborozi.where((u) => u['duty'] == 'Uhagarariye itungo')
                   .toList();
 
           // Auto-select first
-          selectedFarmer = Aborozi.isNotEmpty ? Aborozi.first['abshuui'] : null;
+          selectedFarmer = Aborozi.isNotEmpty ? Aborozi.first['select'] : null;
           selectedSupervisor =
-              Abishingizi.isNotEmpty ? Abishingizi.first['abshuui'] : null;
+              Abishingizi.isNotEmpty ? Abishingizi.first['select'] : null;
         });
       } else {
         print('Error fetching Aborozi: ${response.statusCode}');
@@ -112,14 +91,63 @@ class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
   }
 
   void assignAnimal() {
+    if (selectedAnimal == null ||
+        selectedFarmer == 'select' ||
+        selectedSupervisor == 'select') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select all fields"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final abishing = (Abishingizi.firstWhere(
+      (item) => item['value'] == selectedSupervisor,
+      orElse: () => <String, String>{'display': ''},
+    ))['display'];
+
+    print("abish>>>>>>> $abishing ");
+
+    if (selectedAnimal == null ||
+        selectedAnimal!.isEmpty ||
+        selectedFarmer == null ||
+        selectedFarmer!.isEmpty ||
+        selectedSupervisor == null ||
+        selectedSupervisor!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content:
+              Text("Hitamo itungo, umworozi n'umushingizi mbere yo kohereza"),
+        ),
+      );
+      return;
+    }
+
     if (selectedAnimal != null &&
         selectedFarmer != null &&
         selectedSupervisor != null) {
       setState(() {
+        RagizaItungo(); // Save
+
         assignments.add({
-          "itungo": selectedAnimal,
-          "umworozi": selectedFarmer,
-          "umwishingizi": selectedSupervisor,
+          // display saved info
+          "itungo": (AmatungoList.firstWhere(
+            (item) => item['value'] == selectedAnimal,
+            orElse: () => <String, String>{'display': ''},
+          ))['display'],
+
+          "umworozi": (Aborozi.firstWhere(
+            (item) => item['value'] == selectedFarmer,
+            orElse: () => <String, String>{'display': ''},
+          ))['display'],
+          "umwishingizi": (Abishingizi.firstWhere(
+            (item) => item['value'] == selectedSupervisor,
+            orElse: () => <String, String>{'name': ''},
+          ))['name'],
+
           "itariki": DateTime.now(),
         });
 
@@ -156,33 +184,39 @@ class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
           children: [
             BorderedSearchDropdown(
               label: "Amatungo",
-              items: AmatungoList.map((a) => {
-                    'value': (a['itunguui'] ?? '').toString(),
-                    'display': (a['itngcode'] ?? '').toString() +
-                        "(" +
-                        (a['ibara'] ?? '').toString() +
-                        ")"
-                  }).toList(),
+              items: AmatungoList, // now contains value + display maps
               selectedValue: selectedAnimal,
               onChanged: (val) => setState(() => selectedAnimal = val),
             ),
             const SizedBox(height: 12),
             BorderedSearchDropdown(
               label: "Aborozi",
-              items: Aborozi.map((f) => {
-                    'value': (f['abshuui'] ?? '').toString(),
-                    'display': (f['name'] ?? '').toString()
-                  }).toList(),
+              items: [
+                {
+                  'value': 'select',
+                  'display': '-- Select Aborozi --',
+                },
+                ...Aborozi.map((f) => {
+                      'value': (f['abshuui'] ?? '').toString(),
+                      'display': (f['name'] ?? '').toString(),
+                    }),
+              ],
               selectedValue: selectedFarmer,
               onChanged: (val) => setState(() => selectedFarmer = val),
             ),
             const SizedBox(height: 12),
             BorderedSearchDropdown(
               label: "Abishingizi",
-              items: Abishingizi.map((f) => {
-                    'value': (f['abshuui'] ?? '').toString(),
-                    'display': (f['name'] ?? '').toString()
-                  }).toList(),
+              items: [
+                {
+                  'value': 'select',
+                  'display': '-- Select Abishingizi --',
+                },
+                ...Abishingizi.map((f) => {
+                      'value': (f['abshuui'] ?? '').toString(),
+                      'display': (f['name'] ?? '').toString(),
+                    }),
+              ],
               selectedValue: selectedSupervisor,
               onChanged: (val) => setState(() => selectedSupervisor = val),
             ),
@@ -219,6 +253,72 @@ class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
         ),
       ),
     );
+  }
+
+  void RagizaItungo() async {
+    final uri = Uri.parse(ApiUrls.postIndagizo);
+
+    try {
+      // Send JSON instead of multipart
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'itunguui': selectedAnimal,
+          'abshuui_umworoz': selectedFarmer,
+          'abshuui_uhagariy': selectedSupervisor,
+        }),
+      );
+
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text(
+              "Itungo Ryaragijwe",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+        await Future.delayed(const Duration(seconds: 1));
+      } else if (response.statusCode == 400) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Color.fromARGB(255, 185, 79, 105),
+            content: Text(
+              "Itungo Ryaragijwe Abandi",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+        await Future.delayed(const Duration(seconds: 1));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Color.fromARGB(255, 204, 107, 17),
+            content: Text(
+              "Habayemo ikibazo",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Color.fromRGBO(244, 235, 54, 1),
+          content: Text(
+            "Network error",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
   }
 }
 

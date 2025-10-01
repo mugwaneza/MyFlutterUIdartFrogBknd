@@ -330,17 +330,20 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
       setState(() {
         allAmatungo = data
             .map((item) => {
+                  'itunguui': '${item['itunguui'] ?? ''}',
                   'image':
                       'http://127.0.0.1:8080/amatungo/imagesdirectory/${item['ifoto_url'] ?? ''}',
                   'name': '${item['ibara'] ?? ''}',
                   'price': '${item['amafaranga_rihagaze'] ?? ''}',
                   'reproduction': '${item['ubwokobwitungo'] ?? ''}',
-                  'guardian': '${item['abashumba'] ?? ''}',
+                  'guardian': '${item['guardian'] ?? ''}',
                   'supervisor': '${item['supervisor'] ?? ''}',
                   'gender': '${item['igitsina'] ?? ''}',
                   'age': '${item['ubukure'] ?? ''}',
                   'arrival_date': '${item['igihe'] ?? ''}',
                   'code': '${item['itngcode'] ?? ''}',
+                  'umworozi': '${item['umworozi'] ?? ''}',
+                  'itarikikuragiza': '${item['itarikikuragiza'] ?? ''}',
                 })
             .toList();
 
@@ -385,7 +388,7 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
             child: TextField(
               decoration: InputDecoration(
                 hintText:
-                    'Shakisha izina, ushinzwe, umugenzuzi, cyangwa code...',
+                    'Shakisha izina, Urikurikana, umugenzuzi, cyangwa code...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
@@ -414,8 +417,9 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            Guhuza_amatungo_aborozi(), // pass the data
+                        builder: (context) => Guhuza_amatungo_aborozi(
+                          clickedItem: itungo, // pass the current clicked item
+                        ), // Go to assign page and pass the data
                       ),
                     );
                   },
@@ -462,9 +466,19 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
                                       "Igihe ryaziye", itungo['arrival_date']),
                                 ]),
                                 TableRow(children: [
-                                  _buildField("Ushinzwe", itungo['guardian']),
+                                  _buildField(
+                                      "Urihagarariye", itungo['guardian']),
                                   _buildField("Code", itungo['code']),
                                 ]),
+                                TableRow(
+                                  children: [
+                                    _buildField("itunguui", itungo['itunguui'],
+                                        visible: false),
+                                    _buildField("itunguui_imyruui",
+                                        itungo['itunguui_imyruui'],
+                                        visible: false),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -504,7 +518,9 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
     );
   }
 
-  Widget _buildField(String label, String? value) {
+  Widget _buildField(String label, String? value, {bool visible = true}) {
+    if (!visible) return const SizedBox.shrink(); // hidden
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
       child: RichText(

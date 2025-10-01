@@ -4,4 +4,7 @@ class ApiUrls {
   static const String fetchListAborozi = '$baseUrl/aborozi/lisiti_aborozi';
   static const String fetchListAmatungo =
       '$baseUrl/amatungo/amatungo_aborozi/lisitiamatungoaborozi';
+
+  static const String postIndagizo =
+      '$baseUrl/amatungo/amatungo_aborozi/indagizo';
 }

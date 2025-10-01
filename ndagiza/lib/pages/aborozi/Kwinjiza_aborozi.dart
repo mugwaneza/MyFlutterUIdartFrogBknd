@@ -492,9 +492,9 @@ class _KwinjizaAboroziState extends State<Kwinjiza_aborozi> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.green,
+            backgroundColor: const Color.fromARGB(255, 194, 71, 0),
             content: Text(
-              "Amakuru yinjijwe neza",
+              "Habayemo ikibazo",
               style: TextStyle(color: Colors.white),
             ),
           ),
