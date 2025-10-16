@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ndagiza/pages/aborozi/guhuza_amatungo_aborozi.dart';
+import 'package:ndagiza/pages/amatungo/ItungoDetailsPage%20.dart';
 import 'package:ndagiza/pages/amatungo/kwinjiza_itungo_form.dart';
 import 'package:ndagiza/pages/aborozi/Aborozilist.dart';
 import 'package:ndagiza/statics/ApiUrls.dart';
@@ -205,7 +206,10 @@ class _HomeTabState extends State<HomeTab> {
                               ),
                             ),
                             TextSpan(
-                              text: '5', // Bolded green number
+                              text: choices.fold<int>(0, (sum, item) {
+                                // Convert title to int safely
+                                return sum + (int.tryParse(item.label) ?? 0);
+                              }).toString(),
                               style: TextStyle(
                                 color:
                                     Colors.green, // Green color for the number
@@ -224,7 +228,7 @@ class _HomeTabState extends State<HomeTab> {
             ),
             const SizedBox(height: 10), // Space between the alert and grid
 
-            // 🔵 GridView for Card Buttons
+            //  GridView for Card Buttons
             GridView.builder(
               shrinkWrap: true,
               physics:
@@ -276,8 +280,7 @@ class _HomeTabState extends State<HomeTab> {
 
   Future<void> fetchAmatungoIcyiciroList() async {
     try {
-      final response =
-          await http.get(Uri.parse('http://127.0.0.1:8080/amatungo/itungo'));
+      final response = await http.get(Uri.parse(ApiUrls.IcyiroList));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
@@ -414,14 +417,25 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
 
                 return InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Guhuza_amatungo_aborozi(
-                          clickedItem: itungo, // pass the current clicked item
-                        ), // Go to assign page and pass the data
-                      ),
-                    );
+                    if (guardianPresent) {
+                      // Go to ItungoDetails if guardian is present
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ItungoDetailsPage(),
+                        ),
+                      );
+                    } else {
+                      // Otherwise go to Guhuza_amatungo_aborozi
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Guhuza_amatungo_aborozi(
+                            clickedItem: itungo,
+                          ),
+                        ),
+                      );
+                    }
                   },
                   child: Card(
                     margin: const EdgeInsets.symmetric(vertical: 10),

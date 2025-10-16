@@ -7,4 +7,6 @@ class ApiUrls {
 
   static const String postIndagizo =
       '$baseUrl/amatungo/amatungo_aborozi/indagizo';
+
+  static const String IcyiroList = '$baseUrl/amatungo/itungo';
 }
