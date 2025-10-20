@@ -35,9 +35,6 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
       final response =
           await http.get(Uri.parse(ApiUrls.ImyorkrList + '$itunguui'));
 
-      final url = Uri.parse(ApiUrls.ImyorkrList + '$itunguui');
-      print("Url>>>>>>>>>>. $url");
-
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         final List<dynamic> data = decoded is List ? decoded : [];
@@ -111,32 +108,59 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
           if (ItungoImyororokereList.isNotEmpty) {
             final firstItem = ItungoImyororokereList[0];
 
+            // Parse the date
+            DateTime? bleedingDate;
+            if (firstItem['itariki_ryimiye'] != null) {
+              bleedingDate = DateTime.tryParse(firstItem['itariki_ryimiye']);
+            }
+
+            int monthsToAdd =
+                int.tryParse(firstItem['ameziibyarira']?.toString() ?? '') ?? 0;
+            print('moths>> $monthsToAdd');
+
+            // Calculate expected birth date
+            String expectedBirthDate = 'N/A';
+            if (bleedingDate != null &&
+                monthsToAdd > 0 &&
+                (firstItem['igitsina']?.toUpperCase() == 'FEMALE' ||
+                    firstItem['igitsina']?.toUpperCase() == 'GORE')) {
+              DateTime birthDate = DateTime(
+                bleedingDate.year,
+                bleedingDate.month + monthsToAdd,
+                bleedingDate.day,
+              );
+
+              expectedBirthDate =
+                  "${birthDate.year.toString().padLeft(4, '0')}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}";
+            }
+
             // now map into Itungo model
             itungo = Itungo(
               //id: firstItem['itunguui'] ?? 'N/A',
               ubwoko: firstItem['ubwokobwitungo'] ?? 'N/A',
-              igitsina: firstItem['igitsina_cyavutse'] ?? 'N/A',
+              igitsina: firstItem['igitsina'] ?? 'N/A',
               code: firstItem['itngcode'] ?? 'N/A',
               igiciro: firstItem['amafaranga_rihagaze'] ?? 'N/A',
-              igiheRyaziy: firstItem['ameziibyarira'] ?? 'N/A',
-              igiheRimye: firstItem['itariki_ariherewe'] ??
-                  'N/A', // adjust key if needed
-              igiheRizimira: firstItem['itariki_aryakiwe'] ?? 'N/A',
-              igiheRizabyarira: firstItem['itariki_ribyariye'] ?? 'N/A',
+              igiheRyaziy: firstItem['igihe'] ?? 'N/A',
+              ameziibyarira: firstItem['ameziibyarira'] ?? 'N/A',
+              igiheRyimiye: firstItem['itariki_ryimiye'] ?? 'N/A',
+              igiheRizimira: 'N/A',
+              igiheRizabyarira: expectedBirthDate,
               ubukure: firstItem['ubukure'] ?? 'N/A',
-              ubuzima: firstItem['amafaranga_yarigiyeho'] ?? 'N/A',
+              ubuzima: 'N/A',
               itarikiUbuzima: firstItem['itariki_byabereyeho'] ?? 'N/A',
               ikibazo: firstItem['ibisobanuro'] ?? 'N/A',
-              ikiguziUbuvuzi: firstItem['amafaranga_ryinjije'] ?? 'N/A',
-              uriragiye: firstItem['izina_uhagarariye'] ?? 'N/A',
-              ahoAtuye: firstItem['aho_atuye_uhagarariye'] ?? 'N/A',
+              ikiguziUbuvuzi: firstItem['amafaranga_yarigiyeho'] ?? 'N/A',
+              uriragiye: firstItem['izina_uworoye'] ?? 'N/A',
+              ahoAtuye: firstItem['aho_atuye_uworoye'] ?? 'N/A',
 
-              telUragiye: firstItem['telephone_uhagarariye'] ?? 'N/A',
-              igiheYarifatiye: firstItem['itariki_yaguriwe'] ?? 'N/A',
+              telUragiye: firstItem['telephone_uworoye'] ?? 'N/A',
+              igiheYarifatiye:
+                  firstItem['itariki_ariherewe'] ?? 'N/A', //itariki_yaguriwe
 
-              umwishingizi: firstItem['izina_uworoye'] ?? 'N/A',
-              ahoAtuyeUmwishingizi: firstItem['aho_atuye_uworoye'] ?? 'N/A',
-              telUmwishingizi: firstItem['telephone_uworoye'] ?? 'N/A',
+              umwishingizi: firstItem['izina_uhagarariye'] ?? 'N/A',
+              ahoAtuyeUmwishingizi: firstItem['aho_atuye_uhagarariye'] ?? 'N/A',
+              telUmwishingizi: firstItem['telephone_uhagarariye'] ?? 'N/A',
             );
           }
         });
@@ -156,7 +180,7 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
     //accessing `itungo` before loading finishes
     if (ItungoImyororokereList.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Itungo Details")),
+        appBar: AppBar(title: const Text("UKO RYOROROKA")),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -178,13 +202,13 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
         icon: Icons.egg,
         iconColor: Colors.green,
         children: [
-          _tableRow('IGIHE RIMYE', itungo.igiheRimye, 'IGIHE RIZIMIRA',
+          _tableRow('RYIMYE KU WA', itungo.igiheRyimiye, 'IGIHE CYO KWIMA',
               itungo.igiheRizimira,
               isDate1: true,
               isDate2: true,
               color: Colors.green,
               animateRight: AnimationType.pulse),
-          _tableRow('IGIHE RIZABYARIRA', itungo.igiheRizabyarira, 'UBUKURE',
+          _tableRow('IGIHE CYO KUBYARA', itungo.igiheRizabyarira, 'UBUKURE',
               itungo.ubukure,
               isDate1: true,
               color: Colors.green,
@@ -220,7 +244,13 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Itungo Details')),
+      appBar: AppBar(
+          backgroundColor: Colors.green,
+          title: Text(
+            'Uko Ryororoka',
+            style: TextStyle(
+                color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+          )),
       body: ListView.builder(
         padding: const EdgeInsets.all(12),
         itemCount: sections.length,
@@ -557,7 +587,8 @@ class Itungo {
   final String code;
   final String igiciro;
   final String igiheRyaziy;
-  final String igiheRimye;
+  final String ameziibyarira;
+  final String igiheRyimiye;
   final String igiheRizimira;
   final String igiheRizabyarira;
   final String ubukure;
@@ -579,7 +610,8 @@ class Itungo {
     required this.code,
     required this.igiciro,
     required this.igiheRyaziy,
-    required this.igiheRimye,
+    required this.ameziibyarira,
+    required this.igiheRyimiye,
     required this.igiheRizimira,
     required this.igiheRizabyarira,
     required this.ubukure,
