@@ -1,44 +1,175 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:ndagiza/statics/ApiUrls.dart';
 
-class ItungoDetailsPage extends StatelessWidget {
-  const ItungoDetailsPage({Key? key}) : super(key: key);
+// Main Stateful Widget
+class ItungoDetailsPage extends StatefulWidget {
+  final Map<String, dynamic> clickedItem;
 
-  final Itungo dummyItungo = const Itungo(
-    id: '1',
-    ubwoko: 'IHENE',
-    igitsina: 'GORE',
-    code: 'IH004',
-    igiciro: '50,000 Rwf',
-    igiheRyaziy: '20/06/2025',
-    igiheRimye: '12/01/2025',
-    igiheRizimira: '26/07/2025',
-    igiheRizabyarira: '30/12/2025',
-    ubukure: '29 MONTHS 2 DAYS',
-    ubuzima: 'RYARARWAYE',
-    itarikiUbuzima: '20/04/2025',
-    ikibazo: 'KUVUNIKA',
-    ikiguziUbuvuzi: '40,000 RWF',
-    uriragiye: 'KARANGWA CHARLES',
-    ahoAtuye: 'GASABO / KIGALI / MUHIMA',
-    telUragiye: '07859884984',
-    igiheYarifatiye: '30/08/2025',
-    umwishingizi: 'RUMUMBA JULE',
-    ahoAtuyeUmwishingizi: 'GASABO / KIGALI / KACYIRU',
-    telUmwishingizi: '07859884984',
-  );
+  const ItungoDetailsPage({Key? key, required this.clickedItem})
+      : super(key: key);
+
+  @override
+  State<ItungoDetailsPage> createState() => _ItungoDetailsPageState();
+}
+
+class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
+  late Itungo itungo;
+  List<Map<String, dynamic>> ItungoImyororokereList = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchItungoImyororokereList();
+    // Debug print
+    print("Clicked item itunguui: ${widget.clickedItem['itunguui']}");
+  }
+
+  Future<void> fetchItungoImyororokereList() async {
+    try {
+      final itunguui = widget.clickedItem['itunguui']?.toString() ?? '';
+      if (itunguui.isEmpty) return;
+      final response =
+          await http.get(Uri.parse(ApiUrls.ImyorkrList + '$itunguui'));
+
+      final url = Uri.parse(ApiUrls.ImyorkrList + '$itunguui');
+      print("Url>>>>>>>>>>. $url");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> data = decoded is List ? decoded : [];
+
+        setState(() {
+          ItungoImyororokereList = data
+              .map((item) => {
+                    'itunguui': item['itunguui']?.toString() ?? '',
+                    'itunguui_imyruui':
+                        item['itunguui_imyruui']?.toString() ?? '',
+                    'igitsina': item['igitsina']?.toString() ?? '',
+                    'ibara': item['ibara']?.toString() ?? '',
+                    'ifoto_url': item['ifoto_url']?.toString() ?? '',
+                    'ubukure': item['ubukure']?.toString() ?? '',
+                    'itngcode': item['itngcode']?.toString() ?? '',
+                    'ibiro': item['ibiro']?.toString() ?? '',
+                    'ahoryavuye': item['ahoryavuye']?.toString() ?? '',
+                    'igihe': item['igihe']?.toString() ?? '',
+                    'ukozruui': item['ukozruui']?.toString() ?? '',
+                    'amezi_rihaka': item['amezi_rihaka']?.toString() ?? '',
+                    'itariki_ryimiye':
+                        item['itariki_ryimiye']?.toString() ?? '',
+                    'itariki_ribyariye':
+                        item['itariki_ribyariye']?.toString() ?? '',
+                    'itariki_ariherewe':
+                        item['itariki_ariherewe']?.toString() ?? '',
+                    'itariki_aryakiwe':
+                        item['itariki_aryakiwe']?.toString() ?? '',
+                    'igitsina_cyavutse':
+                        item['igitsina_cyavutse']?.toString() ?? '',
+                    'uzmuui': item['uzmuui']?.toString() ?? '',
+                    'amafaranga_yarigiyeho':
+                        item['amafaranga_yarigiyeho']?.toString() ?? '',
+                    'amafaranga_ryinjije':
+                        item['amafaranga_ryinjije']?.toString() ?? '',
+                    'ibisobanuro': item['ibisobanuro']?.toString() ?? '',
+                    'itariki_byabereyeho':
+                        item['itariki_byabereyeho']?.toString() ?? '',
+                    'amafaranga_rihagaze':
+                        item['amafaranga_rihagaze']?.toString() ?? '',
+                    'itariki_yaguriwe':
+                        item['itariki_yaguriwe']?.toString() ?? '',
+                    'iskuui': item['iskuui']?.toString() ?? '',
+                    'ubwokobwitungo': item['ubwokobwitungo']?.toString() ?? '',
+                    'ameziibyarira': item['ameziibyarira']?.toString() ?? '',
+                    'imyakayokororoka':
+                        item['imyakayokororoka']?.toString() ?? '',
+                    'izina_uhagarariye':
+                        item['izina_uhagarariye']?.toString() ?? '',
+                    'irindi_zina_uhagarariye':
+                        item['irindi_zina_uhagarariye']?.toString() ?? '',
+                    'telephone_uhagarariye':
+                        item['telephone_uhagarariye']?.toString() ?? '',
+                    'inshingano_uhagarariye':
+                        item['inshingano_uhagarariye']?.toString() ?? '',
+                    'aho_atuye_uhagarariye':
+                        item['aho_atuye_uhagarariye']?.toString() ?? '',
+                    'izina_uworoye': item['izina_uworoye']?.toString() ?? '',
+                    'irindi_zina_uworoye':
+                        item['irindi_zina_uworoye']?.toString() ?? '',
+                    'telephone_uworoye':
+                        item['telephone_uworoye']?.toString() ?? '',
+                    'inshingano_uworoye':
+                        item['inshingano_uworoye']?.toString() ?? '',
+                    'aho_atuye_uworoye':
+                        item['aho_atuye_uworoye']?.toString() ?? '',
+                  })
+              .toList();
+
+          // Initialize Itungo from clickedItem
+          if (ItungoImyororokereList.isNotEmpty) {
+            final firstItem = ItungoImyororokereList[0];
+
+            // now map into Itungo model
+            itungo = Itungo(
+              //id: firstItem['itunguui'] ?? 'N/A',
+              ubwoko: firstItem['ubwokobwitungo'] ?? 'N/A',
+              igitsina: firstItem['igitsina_cyavutse'] ?? 'N/A',
+              code: firstItem['itngcode'] ?? 'N/A',
+              igiciro: firstItem['amafaranga_rihagaze'] ?? 'N/A',
+              igiheRyaziy: firstItem['ameziibyarira'] ?? 'N/A',
+              igiheRimye: firstItem['itariki_ariherewe'] ??
+                  'N/A', // adjust key if needed
+              igiheRizimira: firstItem['itariki_aryakiwe'] ?? 'N/A',
+              igiheRizabyarira: firstItem['itariki_ribyariye'] ?? 'N/A',
+              ubukure: firstItem['ubukure'] ?? 'N/A',
+              ubuzima: firstItem['amafaranga_yarigiyeho'] ?? 'N/A',
+              itarikiUbuzima: firstItem['itariki_byabereyeho'] ?? 'N/A',
+              ikibazo: firstItem['ibisobanuro'] ?? 'N/A',
+              ikiguziUbuvuzi: firstItem['amafaranga_ryinjije'] ?? 'N/A',
+              uriragiye: firstItem['izina_uhagarariye'] ?? 'N/A',
+              ahoAtuye: firstItem['aho_atuye_uhagarariye'] ?? 'N/A',
+
+              telUragiye: firstItem['telephone_uhagarariye'] ?? 'N/A',
+              igiheYarifatiye: firstItem['itariki_yaguriwe'] ?? 'N/A',
+
+              umwishingizi: firstItem['izina_uworoye'] ?? 'N/A',
+              ahoAtuyeUmwishingizi: firstItem['aho_atuye_uworoye'] ?? 'N/A',
+              telUmwishingizi: firstItem['telephone_uworoye'] ?? 'N/A',
+            );
+          }
+        });
+      } else {
+        print('Error fetching info: ${response.statusCode}');
+      }
+    } catch (e, st) {
+      print('Exception fetching info: $e\n$st');
+      setState(() {
+        ItungoImyororokereList = [];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    //accessing `itungo` before loading finishes
+    if (ItungoImyororokereList.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Itungo Details")),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final List<_SectionInfo> sections = [
       _SectionInfo(
         title: 'ITUNGO',
         icon: Icons.pets,
         iconColor: Colors.orange,
         children: [
-          _tableRow(
-              'UBWOKO', dummyItungo.ubwoko, 'IGITSINA', dummyItungo.igitsina),
-          _tableRow('CODE', dummyItungo.code, 'IGICIRO', dummyItungo.igiciro),
-          _tableSingleRow('IGIHE RYAZIYE', dummyItungo.igiheRyaziy,
+          _tableRow('UBWOKO', itungo.ubwoko, 'IGITSINA', itungo.igitsina),
+          _tableRow('CODE', itungo.code, 'IGICIRO', itungo.igiciro),
+          _tableSingleRow('IGIHE RYAZIYE', itungo.igiheRyaziy,
               isDate: true, color: Colors.orange),
         ],
       ),
@@ -47,25 +178,17 @@ class ItungoDetailsPage extends StatelessWidget {
         icon: Icons.egg,
         iconColor: Colors.green,
         children: [
-          _tableRow(
-            'IGIHE RIMYE',
-            dummyItungo.igiheRimye,
-            'IGIHE RIZIMIRA',
-            dummyItungo.igiheRizimira,
-            isDate1: true,
-            isDate2: true,
-            color: Colors.green,
-            animateRight: AnimationType.pulse,
-          ),
-          _tableRow(
-            'IGIHE RIZABYARIRA',
-            dummyItungo.igiheRizabyarira,
-            'UBUKURE',
-            dummyItungo.ubukure,
-            isDate1: true,
-            color: Colors.green,
-            animateLeft: AnimationType.colorFade,
-          ),
+          _tableRow('IGIHE RIMYE', itungo.igiheRimye, 'IGIHE RIZIMIRA',
+              itungo.igiheRizimira,
+              isDate1: true,
+              isDate2: true,
+              color: Colors.green,
+              animateRight: AnimationType.pulse),
+          _tableRow('IGIHE RIZABYARIRA', itungo.igiheRizabyarira, 'UBUKURE',
+              itungo.ubukure,
+              isDate1: true,
+              color: Colors.green,
+              animateLeft: AnimationType.colorFade),
         ],
       ),
       _SectionInfo(
@@ -73,11 +196,10 @@ class ItungoDetailsPage extends StatelessWidget {
         icon: Icons.health_and_safety,
         iconColor: Colors.red,
         children: [
-          _tableRow('UBUZIMA', dummyItungo.ubuzima, 'ITARIKI',
-              dummyItungo.itarikiUbuzima,
+          _tableRow('UBUZIMA', itungo.ubuzima, 'ITARIKI', itungo.itarikiUbuzima,
               isDate2: true, color: Colors.red),
-          _tableRow('IKIBAZO', dummyItungo.ikibazo, 'IKIGUZI CY\'UBUVUZI',
-              dummyItungo.ikiguziUbuvuzi),
+          _tableRow('IKIBAZO', itungo.ikibazo, 'IKIGUZI CY\'UBUVUZI',
+              itungo.ikiguziUbuvuzi),
         ],
       ),
       _SectionInfo(
@@ -85,14 +207,14 @@ class ItungoDetailsPage extends StatelessWidget {
         icon: Icons.person,
         iconColor: Colors.blue,
         children: [
-          _tableRow('URIRAGIYE', dummyItungo.uriragiye, 'AHO ATUYE',
-              dummyItungo.ahoAtuye),
-          _tableRow('TEL', dummyItungo.telUragiye, 'IGIHE YARIFATIYE',
-              dummyItungo.igiheYarifatiye,
+          _tableRow(
+              'URIRAGIYE', itungo.uriragiye, 'AHO ATUYE', itungo.ahoAtuye),
+          _tableRow('TEL', itungo.telUragiye, 'IGIHE YARIFATIYE',
+              itungo.igiheYarifatiye,
               isDate2: true, color: Colors.blue),
-          _tableRow('UMWISHINGIZI', dummyItungo.umwishingizi, 'AHO ATUYE',
-              dummyItungo.ahoAtuyeUmwishingizi),
-          _tableSingleRow('TEL UMWISHINGIZI', dummyItungo.telUmwishingizi),
+          _tableRow('UMWISHINGIZI', itungo.umwishingizi, 'AHO ATUYE',
+              itungo.ahoAtuyeUmwishingizi),
+          _tableSingleRow('TEL UMWISHINGIZI', itungo.telUmwishingizi),
         ],
       ),
     ];
@@ -180,7 +302,150 @@ class ItungoDetailsPage extends StatelessWidget {
       );
 }
 
-// Define different animation types
+// Section info
+class _SectionInfo {
+  final String title;
+  final IconData icon;
+  final Color iconColor;
+  final List<Widget> children;
+
+  _SectionInfo({
+    required this.title,
+    required this.icon,
+    required this.iconColor,
+    required this.children,
+  });
+}
+
+// Animated card widget (arrow centered)
+class _AnimatedSectionCard extends StatefulWidget {
+  final _SectionInfo section;
+  const _AnimatedSectionCard({Key? key, required this.section})
+      : super(key: key);
+
+  @override
+  State<_AnimatedSectionCard> createState() => _AnimatedSectionCardState();
+}
+
+class _AnimatedSectionCardState extends State<_AnimatedSectionCard>
+    with SingleTickerProviderStateMixin {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails details) => setState(() => _scale = 1.2);
+  void _onTapUp(TapUpDetails details) => setState(() => _scale = 1.0);
+  void _onTapCancel() => setState(() => _scale = 1.0);
+
+  @override
+  Widget build(BuildContext context) {
+    final section = widget.section;
+
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: section.iconColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(section.icon, color: section.iconColor),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              section.title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              height: 3,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                color: section.iconColor.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: section.children
+                            .map((child) => Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: child,
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 16,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: AnimatedScale(
+                  scale: _scale,
+                  duration: const Duration(milliseconds: 150),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: section.iconColor.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.arrow_forward_ios,
+                        size: 16, color: section.iconColor),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Animation types
 enum AnimationType { pulse, colorFade, bounce }
 
 class _AnimatedDateCell extends StatefulWidget {
@@ -266,10 +531,7 @@ class _AnimatedDateCellState extends State<_AnimatedDateCell>
         );
         break;
       case AnimationType.bounce:
-        content = SlideTransition(
-          position: _offsetAnim,
-          child: content,
-        );
+        content = SlideTransition(position: _offsetAnim, child: content);
         break;
     }
 
@@ -288,161 +550,8 @@ class _AnimatedDateCellState extends State<_AnimatedDateCell>
   }
 }
 
-// Section info
-class _SectionInfo {
-  final String title;
-  final IconData icon;
-  final Color iconColor;
-  final List<Widget> children;
-
-  _SectionInfo({
-    required this.title,
-    required this.icon,
-    required this.iconColor,
-    required this.children,
-  });
-}
-
-// Animated card widget (same as previous, arrow centered)
-class _AnimatedSectionCard extends StatefulWidget {
-  final _SectionInfo section;
-  const _AnimatedSectionCard({Key? key, required this.section})
-      : super(key: key);
-
-  @override
-  State<_AnimatedSectionCard> createState() => _AnimatedSectionCardState();
-}
-
-class _AnimatedSectionCardState extends State<_AnimatedSectionCard>
-    with SingleTickerProviderStateMixin {
-  double _scale = 1.0;
-
-  void _onTapDown(TapDownDetails details) {
-    setState(() => _scale = 1.2);
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    setState(() => _scale = 1.0);
-  }
-
-  void _onTapCancel() {
-    setState(() => _scale = 1.0);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final section = widget.section;
-
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: section.iconColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(section.icon, color: section.iconColor),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              section.title,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              height: 3,
-                              width: 40,
-                              decoration: BoxDecoration(
-                                color: section.iconColor.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 500),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: section.children
-                            .map((child) => Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: child,
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Centered arrow
-            Positioned(
-              right: 16,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: AnimatedScale(
-                  scale: _scale,
-                  duration: const Duration(milliseconds: 150),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: section.iconColor.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.arrow_forward_ios,
-                        size: 16, color: section.iconColor),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // Itungo model
 class Itungo {
-  final String id;
   final String ubwoko;
   final String igitsina;
   final String code;
@@ -464,8 +573,7 @@ class Itungo {
   final String ahoAtuyeUmwishingizi;
   final String telUmwishingizi;
 
-  const Itungo({
-    required this.id,
+  Itungo({
     required this.ubwoko,
     required this.igitsina,
     required this.code,

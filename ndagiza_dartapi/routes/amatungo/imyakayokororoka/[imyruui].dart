@@ -5,7 +5,7 @@ Future<Response> onRequest(RequestContext context, String uuid) async {
 
   if (uuid == null) {
     return Response.json(
-      body: {'error': 'uuid is not availabe'},
+      body: {'error': 'Id is not availabe'},
       statusCode: 400,
     );
   }

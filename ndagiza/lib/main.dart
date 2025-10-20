@@ -422,7 +422,9 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ItungoDetailsPage(),
+                          builder: (context) => ItungoDetailsPage(
+                            clickedItem: itungo,
+                          ),
                         ),
                       );
                     } else {

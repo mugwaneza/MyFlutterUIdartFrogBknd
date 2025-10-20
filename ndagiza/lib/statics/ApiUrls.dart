@@ -9,4 +9,6 @@ class ApiUrls {
       '$baseUrl/amatungo/amatungo_aborozi/indagizo';
 
   static const String IcyiroList = '$baseUrl/amatungo/itungo';
+  static const String ImyorkrList =
+      '$baseUrl/amatungo/amatungo_kororoka_report/';
 }
