@@ -133,6 +133,89 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
               expectedBirthDate =
                   "${birthDate.year.toString().padLeft(4, '0')}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}";
             }
+            //  Find igihe rizimira
+            String itarikiRyimiyeRaw =
+                firstItem['itariki_ryimiye']?.toString()?.trim() ?? '';
+            String itarikiRibyariye =
+                firstItem['itariki_ribyariye']?.toString()?.trim() ?? '';
+            int ubukurebwaryo =
+                int.tryParse(firstItem['ubukure']?.toString() ?? '0') ?? 0;
+            String igiheStr = firstItem['igihe']?.toString()?.trim() ?? '';
+            String isokostatus = 'N/A';
+
+            if (igiheStr.isNotEmpty) {
+              // Parse to DateTime directly
+              DateTime? regDate;
+              try {
+                if (igiheStr.isNotEmpty) {
+                  regDate = DateTime.parse(igiheStr);
+                }
+              } catch (e) {
+                print('⚠️ Error parsing date: $e');
+              }
+              if (regDate != null) {
+                final now = DateTime.now();
+                final monthsPassed = (now.year - regDate.year) * 12 +
+                    (now.month - regDate.month);
+                ubukurebwaryo += monthsPassed;
+              }
+            }
+
+            String igitsina =
+                firstItem['igitsina']?.toString()?.toUpperCase() ?? '';
+            String igiheRizimiraCyageze = "N/A";
+            DateTime? ribyariyeDate = itarikiRibyariye.isNotEmpty
+                ? DateTime.tryParse(itarikiRibyariye)
+                : null;
+            int monthsAfterItarikiRibyariye = 0;
+
+            // Igihe uzi itariki ryabyariye ukayikoresha ushaka ubukure
+            if (ribyariyeDate != null) {
+              final now = DateTime.now();
+              monthsAfterItarikiRibyariye =
+                  (now.year - ribyariyeDate.year) * 12 +
+                      (now.month - ribyariyeDate.month);
+              // Optional: ensure non-negative
+              if (monthsAfterItarikiRibyariye < 0)
+                monthsAfterItarikiRibyariye = 0;
+            }
+
+            // Main condition
+            if (itarikiRyimiyeRaw.isEmpty &&
+                itarikiRibyariye.isEmpty &&
+                ubukurebwaryo >= 12 &&
+                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+              igiheRizimiraCyageze = 'Igihe cyo kwima cyarageze';
+            } else if (itarikiRyimiyeRaw.isEmpty &&
+                itarikiRibyariye.isEmpty &&
+                ubukurebwaryo < 12 &&
+                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+              igiheRizimiraCyageze = 'Ntabwo irakura';
+            } else if (itarikiRyimiyeRaw.isEmpty &&
+                itarikiRibyariye.isNotEmpty &&
+                monthsAfterItarikiRibyariye >= 5 &&
+                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+              igiheRizimiraCyageze = 'Igihe cyo kwima cyarageze';
+              expectedBirthDate = itarikiRibyariye;
+            } else if (itarikiRyimiyeRaw.isEmpty &&
+                itarikiRibyariye.isNotEmpty &&
+                monthsAfterItarikiRibyariye < 5 &&
+                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+              igiheRizimiraCyageze = 'Ironsa';
+              expectedBirthDate = itarikiRibyariye;
+            }
+
+            String itarikiRyimiye =
+                itarikiRyimiyeRaw.isEmpty ? 'N/A' : itarikiRyimiyeRaw;
+
+            if (ubukurebwaryo >= 5 &&
+                (igitsina == 'MALE' || igitsina == 'GABO')) {
+              isokostatus = 'IRAGURISHWA';
+            }
+
+            // Identify igiheRizabyarira value based on gender
+            String breedingStatus =
+                (igitsina == "MALE") ? isokostatus : expectedBirthDate;
 
             // now map into Itungo model
             itungo = Itungo(
@@ -143,10 +226,10 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
               igiciro: firstItem['amafaranga_rihagaze'] ?? 'N/A',
               igiheRyaziy: firstItem['igihe'] ?? 'N/A',
               ameziibyarira: firstItem['ameziibyarira'] ?? 'N/A',
-              igiheRyimiye: firstItem['itariki_ryimiye'] ?? 'N/A',
-              igiheRizimira: 'N/A',
-              igiheRizabyarira: expectedBirthDate,
-              ubukure: firstItem['ubukure'] ?? 'N/A',
+              igiheRyimiye: itarikiRyimiye,
+              igiheRizimira: igiheRizimiraCyageze,
+              igiheRizabyarira: breedingStatus,
+              ubukure: ubukurebwaryo,
               ubuzima: 'N/A',
               itarikiUbuzima: firstItem['itariki_byabereyeho'] ?? 'N/A',
               ikibazo: firstItem['ibisobanuro'] ?? 'N/A',
@@ -201,19 +284,39 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
         title: 'IMYOROROKERE',
         icon: Icons.egg,
         iconColor: Colors.green,
-        children: [
-          _tableRow('RYIMYE KU WA', itungo.igiheRyimiye, 'IGIHE CYO KWIMA',
-              itungo.igiheRizimira,
-              isDate1: true,
-              isDate2: true,
-              color: Colors.green,
-              animateRight: AnimationType.pulse),
-          _tableRow('IGIHE CYO KUBYARA', itungo.igiheRizabyarira, 'UBUKURE',
-              itungo.ubukure,
-              isDate1: true,
-              color: Colors.green,
-              animateLeft: AnimationType.colorFade),
-        ],
+        children: itungo.igitsina.toUpperCase() == "FEMALE"
+            ? [
+                _tableRow(
+                  'RYIMYE KU WA',
+                  itungo.igiheRyimiye,
+                  'IGIHE CYO KWIMA',
+                  itungo.igiheRizimira,
+                  isDate1: true,
+                  isDate2: true,
+                  color: Colors.green,
+                  animateRight: AnimationType.pulse,
+                ),
+                _tableRow(
+                  'IGIHE CYO KUBYARA',
+                  itungo.igiheRizabyarira,
+                  'UBUKURE',
+                  'Amezi ${itungo.ubukure}',
+                  isDate1: true,
+                  color: Colors.green,
+                  animateLeft: AnimationType.colorFade,
+                ),
+              ]
+            : [
+                _tableRow(
+                  'IGIHE CYO KUGURISHWA',
+                  itungo.igiheRizabyarira,
+                  'UBUKURE',
+                  'Amezi ${itungo.ubukure}',
+                  isDate1: true,
+                  color: Colors.green,
+                  animateLeft: AnimationType.colorFade,
+                ),
+              ],
       ),
       _SectionInfo(
         title: 'UBUZIMA BWARYO',
@@ -233,7 +336,7 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
         children: [
           _tableRow(
               'URIRAGIYE', itungo.uriragiye, 'AHO ATUYE', itungo.ahoAtuye),
-          _tableRow('TEL', itungo.telUragiye, 'IGIHE YARIFATIYE',
+          _tableRow('TEL UMUSHUMBA', itungo.telUragiye, 'IGIHE YARIFATIYE',
               itungo.igiheYarifatiye,
               isDate2: true, color: Colors.blue),
           _tableRow('UMWISHINGIZI', itungo.umwishingizi, 'AHO ATUYE',
@@ -591,7 +694,7 @@ class Itungo {
   final String igiheRyimiye;
   final String igiheRizimira;
   final String igiheRizabyarira;
-  final String ubukure;
+  final int ubukure;
   final String ubuzima;
   final String itarikiUbuzima;
   final String ikibazo;
