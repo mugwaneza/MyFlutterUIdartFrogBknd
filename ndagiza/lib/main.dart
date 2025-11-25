@@ -8,6 +8,47 @@ import 'package:ndagiza/pages/amatungo/kwinjiza_itungo_form.dart';
 import 'package:ndagiza/pages/aborozi/Aborozilist.dart';
 import 'package:ndagiza/statics/ApiUrls.dart';
 
+import 'package:flutter/material.dart';
+
+// ------------------ Notification Data ------------------
+class NotificationItem {
+  final int id;
+  final String title;
+  final String message;
+  final DateTime date;
+  bool isRead; // mutable so we can mark as read
+
+  NotificationItem({
+    required this.id,
+    required this.title,
+    required this.message,
+    required this.date,
+    this.isRead = false,
+  });
+}
+
+List<NotificationItem> notifications = [
+  NotificationItem(
+    id: 1,
+    title: "Icyitonderwa",
+    message: "Hari icyorezo cyagaragaye hafi yawe!",
+    date: DateTime.now().subtract(Duration(minutes: 5)),
+  ),
+  NotificationItem(
+    id: 2,
+    title: "Amakuru mashya",
+    message: "Urwuri rwawe rwakosowe neza.",
+    date: DateTime.now().subtract(Duration(hours: 1)),
+  ),
+  NotificationItem(
+    id: 3,
+    title: "Guhindura gahunda",
+    message: "Hari impinduka mu rutonde rw'aborozi.",
+    date: DateTime.now().subtract(Duration(hours: 3)),
+  ),
+];
+
+// ------------------ MAIN APP ------------------
 void main() {
   runApp(const MyApp());
 }
@@ -15,31 +56,28 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(),
       home: DefaultTabController(
-        length: 2, // Number of tabs
+        length: 2,
         child: Scaffold(
           appBar: PreferredSize(
             preferredSize: Size.fromHeight(kToolbarHeight + kTextTabBarHeight),
             child: Column(
               children: [
-                // Custom status bar color (top of the screen)
                 Container(
-                  color: Colors.red, // Color for the status bar area
+                  color: Colors.red,
                   height: MediaQuery.of(context).padding.top,
                 ),
-                // AppBar content
                 Container(
-                  color: Colors.green, // AppBar background
+                  color: Colors.green,
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -51,55 +89,89 @@ class MyApp extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+
+                            // ------------ Notification Bell with Badge -----------
                             Row(
+                              mainAxisAlignment: MainAxisAlignment
+                                  .end, // align items to the right
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.notifications,
-                                      color: Colors.white),
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text('Notifications Clicked!')),
-                                    );
-                                  },
-                                ),
-                                Builder(
-                                  builder: (innerContext) =>
-                                      PopupMenuButton<String>(
-                                    icon: const Icon(Icons.more_vert,
-                                        color: Colors.white),
-                                    onSelected: (String value) {
-                                      if (value == 'Aborozi') {
-                                        Navigator.push(
-                                          innerContext,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const AboroziList(),
-                                          ),
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content:
-                                                  Text('Selected: $value')),
-                                        );
-                                      }
-                                    },
-                                    itemBuilder: (BuildContext context) => [
-                                      const PopupMenuItem(
-                                          value: 'Ibindanga',
-                                          child: Text('Ibindanga')),
-                                      const PopupMenuItem(
-                                        value: 'Aborozi',
-                                        child: Text('Aborozi'),
+                                // ------------ Notification Bell with Badge -----------
+                                SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: Stack(
+                                    clipBehavior:
+                                        Clip.none, // allow badge to overflow
+                                    children: [
+                                      Builder(
+                                        builder: (context) => IconButton(
+                                          padding: EdgeInsets.zero,
+                                          icon: const Icon(Icons.notifications,
+                                              color: Colors.white),
+                                          onPressed: () {
+                                            showModalBottomSheet(
+                                              context: context,
+                                              backgroundColor: Colors.white,
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                            20)),
+                                              ),
+                                              builder: (_) =>
+                                                  NotificationPreviewSheet(
+                                                      parentContext: context),
+                                            );
+                                          },
+                                        ),
                                       ),
-                                      const PopupMenuItem(
-                                          value: 'Gusohoka',
-                                          child: Text('Gusohoka')),
+                                      if (notifications
+                                          .where((n) => !n.isRead)
+                                          .isNotEmpty)
+                                        Positioned(
+                                          right: -2,
+                                          top: 7,
+                                          child: CircleAvatar(
+                                            radius: 8,
+                                            backgroundColor: Colors.redAccent,
+                                            child: Text(
+                                              notifications
+                                                  .where((n) => !n.isRead)
+                                                  .length
+                                                  .toString(),
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10),
+                                            ),
+                                          ),
+                                        ),
                                     ],
                                   ),
+                                ),
+
+                                const SizedBox(width: 8),
+
+                                // ------------ More Menu -----------
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert,
+                                      color: Colors.white),
+                                  onSelected: (String value) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text('Selected: $value')));
+                                  },
+                                  itemBuilder: (context) => const [
+                                    PopupMenuItem(
+                                        value: 'Ibindanga',
+                                        child: Text('Ibindanga')),
+                                    PopupMenuItem(
+                                        value: 'Aborozi',
+                                        child: Text('Aborozi')),
+                                    PopupMenuItem(
+                                        value: 'Gusohoka',
+                                        child: Text('Gusohoka')),
+                                  ],
                                 ),
                               ],
                             ),
@@ -110,8 +182,6 @@ class MyApp extends StatelessWidget {
                         labelColor: Colors.white,
                         unselectedLabelColor: Colors.white,
                         indicatorColor: Colors.orange,
-                        labelStyle: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14),
                         tabs: [
                           Tab(text: "Amakuru y'ubworozi"),
                           Tab(text: "Amatungo yacu"),
@@ -125,11 +195,79 @@ class MyApp extends StatelessWidget {
           ),
           body: TabBarView(
             children: [
-              HomeTab(), // Show Home Tab
-              AnimalsGuardians(), // Your new tab content
+              HomeTab(),
+              AnimalsGuardians(),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class NotificationPreviewSheet extends StatelessWidget {
+  final BuildContext parentContext;
+  NotificationPreviewSheet({required this.parentContext});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ...notifications.take(3).map((n) {
+            return ListTile(
+              title: Text(n.title),
+              subtitle: Text(
+                n.message,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: Text(
+                "${n.date.hour}:${n.date.minute.toString().padLeft(2, '0')}",
+              ),
+              onTap: () {
+                Navigator.pop(parentContext); // use parent context
+                Navigator.push(
+                  parentContext,
+                  MaterialPageRoute(
+                    builder: (_) => NotificationListPage(notificationId: n.id),
+                  ),
+                );
+              },
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+}
+
+// ------------------ Notification List Page ------------------
+class NotificationListPage extends StatelessWidget {
+  final int? notificationId; // optional to scroll to specific
+
+  const NotificationListPage({super.key, this.notificationId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Notifications"),
+      ),
+      body: ListView.builder(
+        itemCount: notifications.length,
+        itemBuilder: (context, index) {
+          var n = notifications[index];
+          return ListTile(
+            title: Text(n.title),
+            subtitle: Text(n.message),
+            trailing: Text(
+              "${n.date.hour}:${n.date.minute.toString().padLeft(2, '0')}",
+            ),
+          );
+        },
       ),
     );
   }
