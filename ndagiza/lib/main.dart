@@ -139,25 +139,31 @@ class MyApp extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert,
-                                      color: Colors.white),
-                                  onSelected: (String value) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text('Selected: $value')));
-                                  },
-                                  itemBuilder: (context) => const [
-                                    PopupMenuItem(
-                                        value: 'Ibindanga',
-                                        child: Text('Ibindanga')),
-                                    PopupMenuItem(
-                                        value: 'Aborozi',
-                                        child: Text('Aborozi')),
-                                    PopupMenuItem(
-                                        value: 'Gusohoka',
-                                        child: Text('Gusohoka')),
-                                  ],
+                                Builder(
+                                  builder: (context) => PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert,
+                                        color: Colors.white),
+                                    onSelected: (String value) {
+                                      if (value == 'Aborozi') {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) => AboroziList()),
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (context) => const [
+                                      PopupMenuItem(
+                                          value: 'Ibindanga',
+                                          child: Text('Ibindanga')),
+                                      PopupMenuItem(
+                                          value: 'Aborozi',
+                                          child: Text('Aborozi')),
+                                      PopupMenuItem(
+                                          value: 'Gusohoka',
+                                          child: Text('Gusohoka')),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
