@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 
 // ------------------ Notification Data ------------------
 class NotificationItem {
-  final int id;
+  final String id;
   final String title;
   final String message;
   final DateTime date;
@@ -27,26 +27,12 @@ class NotificationItem {
   });
 }
 
-List<NotificationItem> notifications = [
-  NotificationItem(
-    id: 1,
-    title: "Icyitonderwa",
-    message: "Hari icyorezo cyagaragaye hafi yawe!",
-    date: DateTime.now().subtract(Duration(minutes: 5)),
-  ),
-  NotificationItem(
-    id: 2,
-    title: "Amakuru mashya",
-    message: "Urwuri rwawe rwakosowe neza.",
-    date: DateTime.now().subtract(Duration(hours: 1)),
-  ),
-  NotificationItem(
-    id: 3,
-    title: "Guhindura gahunda",
-    message: "Hari impinduka mu rutonde rw'aborozi.",
-    date: DateTime.now().subtract(Duration(hours: 3)),
-  ),
-];
+List<Map<String, dynamic>> notificationDataList = [];
+//List<NotificationItem> notifications = [];
+
+// ------------------ ValueNotifier for notifications ------------------
+ValueNotifier<List<NotificationItem>> notificationsNotifier =
+    ValueNotifier<List<NotificationItem>>([]);
 
 // ------------------ MAIN APP ------------------
 void main() {
@@ -90,18 +76,14 @@ class MyApp extends StatelessWidget {
                               ),
                             ),
 
-                            // ------------ Notification Bell with Badge -----------
+                            // Notification Bell with Badge
                             Row(
-                              mainAxisAlignment: MainAxisAlignment
-                                  .end, // align items to the right
                               children: [
-                                // ------------ Notification Bell with Badge -----------
                                 SizedBox(
                                   width: 40,
                                   height: 40,
                                   child: Stack(
-                                    clipBehavior:
-                                        Clip.none, // allow badge to overflow
+                                    clipBehavior: Clip.none,
                                     children: [
                                       Builder(
                                         builder: (context) => IconButton(
@@ -126,33 +108,37 @@ class MyApp extends StatelessWidget {
                                           },
                                         ),
                                       ),
-                                      if (notifications
-                                          .where((n) => !n.isRead)
-                                          .isNotEmpty)
-                                        Positioned(
-                                          right: -2,
-                                          top: 7,
-                                          child: CircleAvatar(
-                                            radius: 8,
-                                            backgroundColor: Colors.redAccent,
-                                            child: Text(
-                                              notifications
-                                                  .where((n) => !n.isRead)
-                                                  .length
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 10),
+
+                                      // Red badge
+                                      ValueListenableBuilder<
+                                          List<NotificationItem>>(
+                                        valueListenable: notificationsNotifier,
+                                        builder: (context, notifList, _) {
+                                          final unreadCount = notifList
+                                              .where((n) => !n.isRead)
+                                              .length;
+                                          if (unreadCount == 0)
+                                            return const SizedBox.shrink();
+                                          return Positioned(
+                                            right: -2,
+                                            top: 7,
+                                            child: CircleAvatar(
+                                              radius: 8,
+                                              backgroundColor: Colors.redAccent,
+                                              child: Text(
+                                                unreadCount.toString(),
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10),
+                                              ),
                                             ),
-                                          ),
-                                        ),
+                                          );
+                                        },
+                                      ),
                                     ],
                                   ),
                                 ),
-
                                 const SizedBox(width: 8),
-
-                                // ------------ More Menu -----------
                                 PopupMenuButton<String>(
                                   icon: const Icon(Icons.more_vert,
                                       color: Colors.white),
@@ -193,7 +179,7 @@ class MyApp extends StatelessWidget {
               ],
             ),
           ),
-          body: TabBarView(
+          body: const TabBarView(
             children: [
               HomeTab(),
               AnimalsGuardians(),
@@ -205,9 +191,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ------------------ Notification Preview Sheet ------------------
 class NotificationPreviewSheet extends StatelessWidget {
   final BuildContext parentContext;
-  NotificationPreviewSheet({required this.parentContext});
+  const NotificationPreviewSheet({required this.parentContext, super.key});
+
+  bool isWithinTwoDays(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date).inHours;
+    return difference <= 48; // 48 hours = 2 days
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +209,9 @@ class NotificationPreviewSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ...notifications.take(3).map((n) {
+          ...notificationsNotifier.value
+              .where((n) => isWithinTwoDays(n.date)) // keep only last 2 days
+              .map((n) {
             return ListTile(
               title: Text(n.title),
               subtitle: Text(
@@ -228,11 +223,16 @@ class NotificationPreviewSheet extends StatelessWidget {
                 "${n.date.hour}:${n.date.minute.toString().padLeft(2, '0')}",
               ),
               onTap: () {
-                Navigator.pop(parentContext); // use parent context
+                Navigator.pop(parentContext);
                 Navigator.push(
                   parentContext,
                   MaterialPageRoute(
-                    builder: (_) => NotificationListPage(notificationId: n.id),
+                    builder: (_) => ItungoDetailsPage(clickedItem: {
+                      'itunguui': n.id,
+                      'title': n.title,
+                      'itngcode': n.message,
+                      'date': n.date.toString(),
+                    }),
                   ),
                 );
               },
@@ -242,24 +242,28 @@ class NotificationPreviewSheet extends StatelessWidget {
       ),
     );
   }
+
+  // Auto-delete old notifications
+  void cleanOldNotifications() {
+    notificationsNotifier.value = notificationsNotifier.value
+        .where((n) => isWithinTwoDays(n.date))
+        .toList();
+  }
 }
 
 // ------------------ Notification List Page ------------------
 class NotificationListPage extends StatelessWidget {
-  final int? notificationId; // optional to scroll to specific
-
+  final String? notificationId;
   const NotificationListPage({super.key, this.notificationId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Notifications"),
-      ),
+      appBar: AppBar(title: const Text("Notifications")),
       body: ListView.builder(
-        itemCount: notifications.length,
+        itemCount: notificationsNotifier.value.length,
         itemBuilder: (context, index) {
-          var n = notifications[index];
+          var n = notificationsNotifier.value[index];
           return ListTile(
             title: Text(n.title),
             subtitle: Text(n.message),
@@ -272,6 +276,8 @@ class NotificationListPage extends StatelessWidget {
     );
   }
 }
+
+// ------------------ Home Tab ------------------
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -297,6 +303,90 @@ class _HomeTabState extends State<HomeTab> {
   void initState() {
     super.initState();
     fetchAmatungoIcyiciroList();
+    fetchItungoImyororokereList();
+  }
+
+// ------------------ Fetch Notifications ------------------
+  Future<void> fetchItungoImyororokereList() async {
+    try {
+      final response = await http.get(Uri.parse(ApiUrls.NotificationListApi));
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> data = decoded is List ? decoded : [];
+        final now = DateTime.now();
+        final List<NotificationItem> fetchedNotifications = [];
+
+        for (var item in data) {
+          final itunguui = item['itunguui']?.toString() ?? '';
+          final itngcode = item['itngcode']?.toString() ?? '';
+          final ubukure = int.tryParse(item['ubukure']?.toString() ?? '0') ?? 0;
+          final igitsina = (item['igitsina']?.toString() ?? '').toUpperCase();
+          final igihe =
+              item['igihe'] != null ? DateTime.tryParse(item['igihe']) : null;
+          final itarikiRyimiye = item['itariki_ryimiye'] != null
+              ? DateTime.tryParse(item['itariki_ryimiye'])
+              : null;
+          final itarikiRibyariye = item['itariki_ribyariye'] != null
+              ? DateTime.tryParse(item['itariki_ribyariye'])
+              : null;
+
+          // Female logic
+          if (igitsina == 'FEMALE' || igitsina == 'GORE') {
+            final monthsOld = igihe != null
+                ? (now.year - igihe.year) * 12 +
+                    (now.month - igihe.month) +
+                    ubukure
+                : ubukure;
+
+            if (monthsOld >= 12) {
+              fetchedNotifications.add(NotificationItem(
+                  id: itunguui,
+                  title: "Igihe cyo kwima cyarageze",
+                  message: "Itungo: $itngcode",
+                  date: now));
+            } else if ((itarikiRyimiye == null && itarikiRibyariye != null) ||
+                (itarikiRyimiye != null && itarikiRibyariye != null)) {
+              final monthsAfterBirth =
+                  (now.year - itarikiRibyariye!.year) * 12 +
+                      (now.month - itarikiRibyariye.month);
+              if (monthsAfterBirth >= 5) {
+                fetchedNotifications.add(NotificationItem(
+                    id: itunguui,
+                    title: "Igihe cyo Kongera kwima cyarageze",
+                    message: "Itungo: $itngcode",
+                    date: now));
+              }
+            } else if (itarikiRyimiye != null && itarikiRibyariye == null) {
+              final monthsAfterMating = (now.year - itarikiRyimiye.year) * 12 +
+                  (now.month - itarikiRyimiye.month);
+              if (monthsAfterMating >= 5) {
+                fetchedNotifications.add(NotificationItem(
+                    id: itunguui,
+                    title: "Igihe cyo kubyara cyarageze",
+                    message: "Itungo: $itngcode",
+                    date: now));
+              }
+            }
+          }
+
+          // Male logic
+          if (ubukure >= 5 && (igitsina == 'MALE' || igitsina == 'GABO')) {
+            fetchedNotifications.add(NotificationItem(
+                id: itunguui,
+                title: "IRAGURISHWA",
+                message: "Itungo: $itngcode",
+                date: now));
+          }
+        }
+
+        // Update ValueNotifier
+        notificationsNotifier.value = fetchedNotifications;
+      } else {
+        notificationsNotifier.value = [];
+      }
+    } catch (e) {
+      notificationsNotifier.value = [];
+    }
   }
 
   String _getLabel(int index) {
