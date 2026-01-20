@@ -209,6 +209,7 @@ class SharedFormData {
   dynamic ukozruui;
   dynamic uzmuui;
   dynamic selectedIsoko;
+  String? categoryText;
 }
 
 /// **Step 1 - Personal Details**
@@ -251,7 +252,7 @@ class PersonalDetailsStep extends StatelessWidget {
             ],
           ),
           _buildTextField(
-            "Ubukure (mumezi) *",
+            "Ubukure (mumezi)",
             ubukureController,
             keyboardType: TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
@@ -259,7 +260,6 @@ class PersonalDetailsStep extends StatelessWidget {
               LengthLimitingTextInputFormatter(6),
             ],
           ),
-          _buildGenderSelector(formData),
           SizedBox(height: 10),
           Text(
             "Ifoto y'ítungo *",
@@ -343,63 +343,59 @@ class PersonalDetailsStep extends StatelessWidget {
     );
   }
 
-  Widget _buildGenderSelector(SharedFormData formData) {
-    return Container(
-      width: 280,
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.green[100],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.green.shade700),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Itsina",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.green.shade900,
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'Female',
-                      groupValue: formData.igitsina,
-                      onChanged: (String? value) {
-                        formData.igitsina = value;
-                      },
-                    ),
-                    const Text('Female'),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'Male',
-                      groupValue: formData.igitsina,
-                      onChanged: (String? value) {
-                        formData.igitsina = value;
-                      },
-                    ),
-                    const Text('Male'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildGenderSelector(SharedFormData formData) {
+  //   if (_selectedCategory == null ||
+  //       !genderByCategory.containsKey(_selectedCategory)) {
+  //     return const SizedBox();
+  //   }
+
+  //   final genders = genderByCategory[_selectedCategory]!;
+
+  //   return Container(
+  //     width: 280,
+  //     margin: const EdgeInsets.symmetric(vertical: 5),
+  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+  //     decoration: BoxDecoration(
+  //       color: Colors.green[100],
+  //       borderRadius: BorderRadius.circular(10),
+  //       border: Border.all(color: Colors.green.shade700),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text(
+  //           "Igitsina cy’itungo",
+  //           style: TextStyle(
+  //             fontSize: 16,
+  //             fontWeight: FontWeight.bold,
+  //             color: Colors.green.shade900,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 6),
+  //         Row(
+  //           children: genders.map((gender) {
+  //             return Expanded(
+  //               child: Row(
+  //                 children: [
+  //                   Radio<String>(
+  //                     value: gender['value']!,
+  //                     groupValue: formData.igitsina,
+  //                     onChanged: (String? value) {
+  //                       setState(() {
+  //                         formData.igitsina = value;
+  //                       });
+  //                     },
+  //                   ),
+  //                   Text(gender['label']!),
+  //                 ],
+  //               ),
+  //             );
+  //           }).toList(),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
 /// **Step 2 - ID Proof**
@@ -427,9 +423,22 @@ class _IDProofStepState extends State<IDProofStep> {
       TextEditingController();
   dynamic _selectedCategory;
   dynamic _selectedUbwokobwitungo;
+  dynamic _selectedIgitsina;
+  String? _selectedText;
 
   final List<Map<String, dynamic>> _categories = [];
   final List<Map<String, dynamic>> _ubwokobwitungo = [];
+  final List<Map<String, dynamic>> listIgitsinaInka = [
+    {'value': 'Inyana', 'text': 'Inyana'},
+    {'value': 'Ijigija', 'text': 'Ijigija'},
+    {'value': 'Imbyeyi', 'text': 'Imbyeyi'},
+    {'value': 'Imfizi', 'text': 'Imfizi'},
+  ];
+  final List<Map<String, dynamic>> listIgitsinaIhene = [
+    {'value': 'Ishashi', 'text': 'Ishashi'},
+    {'value': 'Ijigija', 'text': 'Ijigija'},
+    {'value': 'Isekurume', 'text': 'Isekurume'},
+  ];
 
   bool isUbwokobwitungoAvailable = false;
   bool isImyakayokororokaAvailable = false;
@@ -546,6 +555,14 @@ class _IDProofStepState extends State<IDProofStep> {
             (val) {
               setState(() {
                 _selectedCategory = val;
+                _selectedIgitsina = null; //Reset Inka igitsina dropdown
+                final selected = _categories.firstWhere(
+                  (e) => e['value'] == val,
+                  orElse: () => {},
+                );
+
+                _selectedText = selected['text'];
+
                 _selectedUbwokobwitungo = null;
                 _imyakayokororokaController.text = '';
                 _amaeziibyariraController.text = '';
@@ -553,6 +570,33 @@ class _IDProofStepState extends State<IDProofStep> {
               fetchUbwokobwitungoList();
             },
           ),
+          if (_selectedText == 'Inka')
+            _buildDropdownField(
+              "Igitsina cy’inka *",
+              _selectedIgitsina,
+              listIgitsinaInka,
+              (val) {
+                setState(() {
+                  _selectedIgitsina = val;
+                  widget.formData.igitsina = val;
+                  widget.formData.categoryText = _selectedText;
+                });
+              },
+            ),
+          if (_selectedText == 'Ihene')
+            _buildDropdownField(
+              "Igitsina cy’ihene *",
+              _selectedIgitsina,
+              listIgitsinaIhene,
+              (val) {
+                setState(() {
+                  _selectedIgitsina = val;
+                  widget.formData.igitsina = val;
+                  widget.formData.categoryText = _selectedText;
+                  print('igitsia>>>>>, $val');
+                });
+              },
+            ),
           Visibility(
               visible: isUbwokobwitungoAvailable,
               child: _buildDropdownField(
@@ -614,6 +658,64 @@ class _IDProofStepState extends State<IDProofStep> {
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                   ),
                   child: Text("Next", style: TextStyle(color: Colors.white))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderSelector(SharedFormData formData) {
+    return Container(
+      width: 280,
+      margin: EdgeInsets.symmetric(vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.green[100],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.green.shade700),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Itsina",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.green.shade900,
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Radio<String>(
+                      value: 'ishashi',
+                      groupValue: formData.igitsina,
+                      onChanged: (String? value) {
+                        formData.igitsina = value;
+                      },
+                    ),
+                    const Text('Ishashi'),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Radio<String>(
+                      value: 'isekurume',
+                      groupValue: formData.igitsina,
+                      onChanged: (String? value) {
+                        formData.igitsina = value;
+                      },
+                    ),
+                    const Text('Isekurume'),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
@@ -697,6 +799,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   List<Map<String, dynamic>> _ListUkozororoka = [];
   List<Map<String, dynamic>> _ListUbuzimabwazo = [];
   List<Map<String, dynamic>> _ListIsoko = [];
+
   MediaType? getImageMediaType(String? filename) {
     if (filename == null) return null;
 
@@ -783,20 +886,78 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           Text("Ubusobanuro bwimbitse",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
-          _buildDropdownField(
-            "Uko yororoka *",
-            _selectedUkozororoka,
-            _ListUkozororoka,
-            (val) {
-              setState(() {
-                _selectedUkozororoka = val;
-              });
-            },
-          ),
+          if (widget.formData.categoryText == 'Ihene' &&
+              widget.formData.igitsina != 'Isekurume')
+            _buildDropdownField(
+              "Uko yororoka *",
+              _selectedUkozororoka,
+              _ListUkozororoka.where((e) =>
+                      e['text'] != 'Ni impfizi' &&
+                      e['text'] !=
+                          'Ni isekurume') //List Filtered Ihene yishashi Ukozororoka
+                  .toList(),
+              (val) {
+                setState(() {
+                  _selectedUkozororoka = val;
+                });
+              },
+            ),
+          if (widget.formData.categoryText == 'Ihene' &&
+              widget.formData.igitsina == 'Isekurume')
+            _buildDropdownField(
+              "Uko yororoka *",
+              _selectedUkozororoka,
+              _ListUkozororoka.where((e) =>
+                      e['text'] == 'Ni isekurume' ||
+                      e['text'] ==
+                          'Ntirirakura') //List Filtered Ihene yisekurume Ukozororoka
+                  .toList(),
+              (val) {
+                setState(() {
+                  _selectedUkozororoka = val;
+                });
+              },
+            ),
+          if (widget.formData.categoryText == 'Inka' &&
+              widget.formData.igitsina != 'Imfizi')
+            _buildDropdownField(
+              "Uko yororoka *",
+              _selectedUkozororoka,
+              _ListUkozororoka.where((e) =>
+                      e['text'] != 'Ni impfizi' &&
+                      e['text'] !=
+                          'Ni isekurume') //List Filtered Inka yishashi Ukozororoka
+                  .toList(),
+              (val) {
+                setState(() {
+                  _selectedUkozororoka = val;
+                });
+              },
+            ),
+          if (widget.formData.categoryText == 'Inka' &&
+              widget.formData.igitsina == 'Imfizi')
+            _buildDropdownField(
+              "Uko yororoka *",
+              _selectedUkozororoka,
+              _ListUkozororoka.where((e) =>
+                      e['text'] == 'Ni impfizi' ||
+                      e['text'] ==
+                          'Ntirirakura') //List Filtered Inka yimfizi Ukozororoka
+                  .toList(),
+              (val) {
+                setState(() {
+                  _selectedUkozororoka = val;
+                });
+              },
+            ),
           _buildDropdownField(
             "Ubuzima bw'azo *",
             _selectedUbuzimabwazo,
-            _ListUbuzimabwazo, // pass the list as it is
+            _ListUbuzimabwazo.where((e) =>
+                    e['text'] == 'Ni rizima' ||
+                    e['text'] == 'Ryavunitse' ||
+                    e['text'] == 'Rirarwaye') //List Filtered ubuzima bwamatungo
+                .toList(),
             (val) {
               setState(() {
                 _selectedUbuzimabwazo = val;
