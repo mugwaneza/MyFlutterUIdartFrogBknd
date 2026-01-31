@@ -311,7 +311,7 @@ class PersonalDetailsStep extends StatelessWidget {
               backgroundColor: const Color.fromARGB(255, 20, 105, 20),
               padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
             ),
-            child: Text("Next", style: TextStyle(color: Colors.white)),
+            child: Text("Komeza", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -344,58 +344,6 @@ class PersonalDetailsStep extends StatelessWidget {
   }
 
   // Widget _buildGenderSelector(SharedFormData formData) {
-  //   if (_selectedCategory == null ||
-  //       !genderByCategory.containsKey(_selectedCategory)) {
-  //     return const SizedBox();
-  //   }
-
-  //   final genders = genderByCategory[_selectedCategory]!;
-
-  //   return Container(
-  //     width: 280,
-  //     margin: const EdgeInsets.symmetric(vertical: 5),
-  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-  //     decoration: BoxDecoration(
-  //       color: Colors.green[100],
-  //       borderRadius: BorderRadius.circular(10),
-  //       border: Border.all(color: Colors.green.shade700),
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Text(
-  //           "Igitsina cy’itungo",
-  //           style: TextStyle(
-  //             fontSize: 16,
-  //             fontWeight: FontWeight.bold,
-  //             color: Colors.green.shade900,
-  //           ),
-  //         ),
-  //         const SizedBox(height: 6),
-  //         Row(
-  //           children: genders.map((gender) {
-  //             return Expanded(
-  //               child: Row(
-  //                 children: [
-  //                   Radio<String>(
-  //                     value: gender['value']!,
-  //                     groupValue: formData.igitsina,
-  //                     onChanged: (String? value) {
-  //                       setState(() {
-  //                         formData.igitsina = value;
-  //                       });
-  //                     },
-  //                   ),
-  //                   Text(gender['label']!),
-  //                 ],
-  //               ),
-  //             );
-  //           }).toList(),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }
 
 /// **Step 2 - ID Proof**
@@ -416,7 +364,6 @@ class IDProofStep extends StatefulWidget {
 }
 
 class _IDProofStepState extends State<IDProofStep> {
-  final TextEditingController _amountController = TextEditingController();
   final TextEditingController _imyakayokororokaController =
       TextEditingController();
   final TextEditingController _amaeziibyariraController =
@@ -539,15 +486,6 @@ class _IDProofStepState extends State<IDProofStep> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildTextField(
-            "Amafaranga ryaguzwe (Rwf) *",
-            controller: _amountController,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-              LengthLimitingTextInputFormatter(6),
-            ],
-          ),
           _buildDropdownField(
             "Icyiciro cy’itungo *",
             _selectedCategory,
@@ -641,7 +579,8 @@ class _IDProofStepState extends State<IDProofStep> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(onPressed: widget.onPrevious, child: Text("Back")),
+              ElevatedButton(
+                  onPressed: widget.onPrevious, child: Text("Subira inyuma")),
               SizedBox(width: 10),
               ElevatedButton(
                   onPressed: () {
@@ -649,15 +588,13 @@ class _IDProofStepState extends State<IDProofStep> {
                         _selectedUbwokobwitungo;
                     widget.formData.category = _categories.firstWhere(
                         (item) => item['value'] == _selectedCategory)['text'];
-                    widget.formData.amafaranga_rihagaze =
-                        double.tryParse(_amountController.text);
                     widget.onNext();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 20, 105, 20),
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                   ),
-                  child: Text("Next", style: TextStyle(color: Colors.white))),
+                  child: Text("Komeza", style: TextStyle(color: Colors.white))),
             ],
           ),
         ],
@@ -665,84 +602,62 @@ class _IDProofStepState extends State<IDProofStep> {
     );
   }
 
-  Widget _buildGenderSelector(SharedFormData formData) {
-    return Container(
-      width: 280,
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.green[100],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.green.shade700),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Itsina",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.green.shade900,
+  Widget _buildTextField(
+    String label, {
+    TextEditingController? controller,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    bool enabled = true,
+  }) {
+    return Stack(
+      children: [
+        Container(
+          width: 280,
+          margin: EdgeInsets.symmetric(vertical: 12),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
+            enabled: enabled,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.green[100],
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.green),
+              ),
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'ishashi',
-                      groupValue: formData.igitsina,
-                      onChanged: (String? value) {
-                        formData.igitsina = value;
-                      },
-                    ),
-                    const Text('Ishashi'),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Row(
-                  children: [
-                    Radio<String>(
-                      value: 'isekurume',
-                      groupValue: formData.igitsina,
-                      onChanged: (String? value) {
-                        formData.igitsina = value;
-                      },
-                    ),
-                    const Text('Isekurume'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField(String label,
-      {TextEditingController? controller,
-      TextInputType? keyboardType,
-      List<TextInputFormatter>? inputFormatters,
-      bool enabled = true}) {
-    return Container(
-      width: 280,
-      margin: EdgeInsets.symmetric(vertical: 5),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        enabled: enabled,
-        decoration: InputDecoration(
-          labelText: label,
-          filled: true,
-          fillColor: Colors.green[100],
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
-      ),
+
+        /// 🔖 Top-edge label
+        Positioned(
+          left: 16,
+          top: 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            color: Colors.green[100],
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -752,29 +667,51 @@ class _IDProofStepState extends State<IDProofStep> {
     List<Map<String, dynamic>> options,
     void Function(dynamic) onChanged,
   ) {
-    return Container(
-      width: 280,
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.green[100],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<dynamic>(
-          hint: Text(label),
-          value: selectedValue,
-          isExpanded: true,
-          items: options.map((item) {
-            return DropdownMenuItem<dynamic>(
-              value: item['value'], // the value is the ID (or UUID)
-              child: Text(item['text']), // the text shown to user
-            );
-          }).toList(),
-          onChanged: onChanged,
+    return Stack(
+      children: [
+        Container(
+          width: 280,
+          margin: EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.green[100],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<dynamic>(
+              hint: Text("Hitamo"),
+              value: selectedValue,
+              isExpanded: true,
+              items: options.map((item) {
+                return DropdownMenuItem<dynamic>(
+                  value: item['value'],
+                  child: Text(item['text']),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
         ),
-      ),
+
+        /// 🔖 Top-edge label
+        Positioned(
+          left: 16,
+          top: 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            color: Colors.green[100],
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -799,6 +736,18 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   List<Map<String, dynamic>> _ListUkozororoka = [];
   List<Map<String, dynamic>> _ListUbuzimabwazo = [];
   List<Map<String, dynamic>> _ListIsoko = [];
+  final TextEditingController _ItarikiyokwimaDateController =
+      TextEditingController();
+  final TextEditingController _ItarikiRyabyariyeDateController =
+      TextEditingController();
+  final TextEditingController _ItarikiRyavukiyehoDateController =
+      TextEditingController();
+  final TextEditingController _IbisobanuroUbuzimabwaryoController =
+      TextEditingController();
+
+  final TextEditingController _amountController = TextEditingController();
+
+  DateTime? _selectedDate;
 
   MediaType? getImageMediaType(String? filename) {
     if (filename == null) return null;
@@ -879,6 +828,21 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
 
   @override
   Widget build(BuildContext context) {
+    String? selectedUkozororokaText = _ListUkozororoka.firstWhere(
+      (e) => e['value'] == _selectedUkozororoka,
+      orElse: () => {},
+    )['text'];
+
+    String? selectedUbuzimabwaryoText = _ListUbuzimabwazo.firstWhere(
+      (e) => e['value'] == _selectedUbuzimabwazo,
+      orElse: () => {},
+    )['text'];
+
+    String? selectedUbugureBwaryoText = _ListIsoko.firstWhere(
+      (e) => e['value'] == _selectedIsoko,
+      orElse: () => {},
+    )['text'];
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -899,8 +863,28 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
               (val) {
                 setState(() {
                   _selectedUkozororoka = val;
+                  _ItarikiyokwimaDateController.clear(); // optional reset
+                  _ItarikiRyabyariyeDateController.clear();
+                  _ItarikiRyavukiyehoDateController.clear();
                 });
               },
+            ),
+          if (selectedUkozororokaText == 'Ryimye' ||
+              selectedUkozororokaText == 'Rirahaka')
+            _buildDatePickerField(
+              "Itariki ryimiyeho *",
+              _ItarikiyokwimaDateController,
+            ),
+          if (selectedUkozororokaText == 'Ryabyaye' ||
+              selectedUkozororokaText == 'Rironsa')
+            _buildDatePickerField(
+              "Itariki Ryabyariyeho *",
+              _ItarikiRyabyariyeDateController,
+            ),
+          if (selectedUkozororokaText == 'Ntirirakura')
+            _buildDatePickerField(
+              "Itariki Ryavukiyeho",
+              _ItarikiRyavukiyehoDateController,
             ),
           if (widget.formData.categoryText == 'Ihene' &&
               widget.formData.igitsina == 'Isekurume')
@@ -961,24 +945,51 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
             (val) {
               setState(() {
                 _selectedUbuzimabwazo = val;
+                _IbisobanuroUbuzimabwaryoController.clear();
               });
             },
           ),
+          if (selectedUbuzimabwaryoText == "Ryavunitse" ||
+              selectedUbuzimabwaryoText == "Rirarwaye")
+            _buildTextField(
+              "Ibisobanuro kukuvuzwa *",
+              _IbisobanuroUbuzimabwaryoController,
+              keyboardType: TextInputType.text,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(100),
+              ],
+            ),
           _buildDropdownField(
-            "Ibirebana n'ubugure *",
+            "Aho ryaturutse *",
             _selectedIsoko,
-            _ListIsoko, // pass the list as it is
+            _ListIsoko.where((e) =>
+                    e['text'] == 'Ni impano' ||
+                    e['text'] == 'Ni iryavutse' ||
+                    e['text'] == 'Ryaguzwe') //List Filtered  Ibijyanye n'isoko
+                .toList(), // pass the list as it is
             (val) {
               setState(() {
                 _selectedIsoko = val;
+                _amountController.clear();
               });
             },
           ),
-          SizedBox(height: 280),
+          if (selectedUbugureBwaryoText == "Ryaguzwe")
+            _buildTextField(
+              "Amafaranga ryaguzwe (Rwf) *",
+              _amountController,
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                LengthLimitingTextInputFormatter(6),
+              ],
+            ),
+          SizedBox(height: 70),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(onPressed: widget.onPrevious, child: Text("Back")),
+              ElevatedButton(
+                  onPressed: widget.onPrevious, child: Text("Subira inyuma")),
               SizedBox(width: 10),
               ElevatedButton(
                   onPressed: _handleSubmit,
@@ -986,7 +997,8 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
                     backgroundColor: const Color.fromARGB(255, 20, 105, 20),
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                   ),
-                  child: Text("Submit", style: TextStyle(color: Colors.white))),
+                  child:
+                      Text("Ohereza", style: TextStyle(color: Colors.white))),
             ],
           ),
         ],
@@ -994,16 +1006,26 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
     );
   }
 
-  Widget _buildTextField(String label) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    required TextInputType keyboardType,
+    required List<TextInputFormatter> inputFormatters,
+  }) {
     return Container(
       width: 280,
       margin: EdgeInsets.symmetric(vertical: 5),
       child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: Colors.green[100], // Light green background
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          fillColor: Colors.green[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
     );
@@ -1015,29 +1037,124 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
     List<Map<String, dynamic>> options,
     void Function(dynamic) onChanged,
   ) {
-    return Container(
-      width: 280,
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.green[100],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<dynamic>(
-          hint: Text(label),
-          value: selectedValue,
-          isExpanded: true,
-          items: options.map((item) {
-            return DropdownMenuItem<dynamic>(
-              value: item['value'],
-              child: Text(item['text']),
-            );
-          }).toList(),
-          onChanged: onChanged,
+    return Stack(
+      children: [
+        Container(
+          width: 280,
+          margin: EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.green[100],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<dynamic>(
+              hint: Text("Hitamo"),
+              value: selectedValue,
+              isExpanded: true,
+              items: options.map((item) {
+                return DropdownMenuItem<dynamic>(
+                  value: item['value'],
+                  child: Text(item['text']),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
         ),
-      ),
+
+        /// 🔖 Top-edge label
+        Positioned(
+          left: 16,
+          top: 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            color: Colors.green[100],
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDatePickerField(
+    String label,
+    TextEditingController controller,
+  ) {
+    return Stack(
+      children: [
+        Container(
+          width: 280,
+          margin: EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.green[100],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey),
+          ),
+          child: InkWell(
+            onTap: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+
+              if (pickedDate != null) {
+                setState(() {
+                  _selectedDate = pickedDate;
+                  controller.text =
+                      "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
+                });
+              }
+            },
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    controller.text.isEmpty
+                        ? "Hitamo itariki"
+                        : controller.text,
+                    style: TextStyle(
+                      color: controller.text.isEmpty
+                          ? Colors.black54
+                          : Colors.black,
+                    ),
+                  ),
+                ),
+                Icon(Icons.calendar_month, color: Colors.grey[700]),
+              ],
+            ),
+          ),
+        ),
+
+        /// 🔖 Top-edge label
+        Positioned(
+          left: 16,
+          top: 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            color: Colors.green[100], // same as field bg
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
