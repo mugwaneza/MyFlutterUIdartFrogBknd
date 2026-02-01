@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:js_interop';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,7 @@ import 'dart:io' as io;
 import 'dart:typed_data';
 import 'package:ndagiza/models/itungo_ubuzimabwaryo_model.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:ndagiza/statics/ApiUrls.dart';
 import 'package:path/path.dart' as path;
 import 'dart:typed_data';
 
@@ -210,6 +212,10 @@ class SharedFormData {
   dynamic uzmuui;
   dynamic selectedIsoko;
   String? categoryText;
+  String? itariki_ribyariye;
+  String? itariki_ryimiye;
+  String? itariki_rivukiye;
+  String? ibisobanuro;
 }
 
 /// **Step 1 - Personal Details**
@@ -299,11 +305,35 @@ class PersonalDetailsStep extends StatelessWidget {
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              // Fill formData fields from controllers
-              formData.ibara = ibaraController.text;
-              formData.ubukure = double.tryParse(ubukureController.text);
+              final messenger = ScaffoldMessenger.of(context);
+              void showError(String msg) {
+                messenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(msg),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+              }
 
-              //Add image if present
+              final ubukure = double.tryParse(ubukureController.text);
+
+              // Validation
+              if (ibaraController.text.trim().isEmpty) {
+                showError("Ibara ry'itungo rirakenewe");
+                return;
+              } else if (ubukure == null || ubukure <= 0) {
+                showError("Shyiramo ubukure bwemewe (burenze 0)");
+                return;
+              } else if (formData.photoBytes == null) {
+                showError("Ifoto y'itungo irakenewe");
+                return;
+              }
+
+              // Fill formData fields from controllers
+              formData.ibara = ibaraController.text.trim();
+              formData.ubukure = ubukure;
 
               onNext(); // navigate to the next step
             },
@@ -342,8 +372,6 @@ class PersonalDetailsStep extends StatelessWidget {
       ),
     );
   }
-
-  // Widget _buildGenderSelector(SharedFormData formData) {
 }
 
 /// **Step 2 - ID Proof**
@@ -399,8 +427,8 @@ class _IDProofStepState extends State<IDProofStep> {
   Future<void> fetchIcyiciroList() async {
     // get list of icyiciro cy'inka
     try {
-      final response =
-          await http.get(Uri.parse('http://127.0.0.1:8080/amatungo/icyiciro'));
+      final response = await http.get(Uri.parse(ApiUrls.IcyiciroCyamatungo));
+
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
@@ -425,8 +453,9 @@ class _IDProofStepState extends State<IDProofStep> {
         _ubwokobwitungo.clear(); // Clear while waiting
         isUbwokobwitungoAvailable = false;
       });
-      final response = await http.get(Uri.parse(
-          'http://127.0.0.1:8080/amatungo/ubwokobwamatungo/$_selectedCategory'));
+      final response = await http
+          .get(Uri.parse('${ApiUrls.Ibwokobwamatungo}/$_selectedCategory'));
+
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
@@ -456,8 +485,8 @@ class _IDProofStepState extends State<IDProofStep> {
         _imyakayokororokaController.clear(); // Clear while waiting
         isImyakayokororokaAvailable = false;
       });
-      final response = await http.get(Uri.parse(
-          'http://127.0.0.1:8080/amatungo/imyakayokororoka/$_selectedUbwokobwitungo'));
+      final response = await http.get(
+          Uri.parse('${ApiUrls.ImyakayoKororoka}/$_selectedUbwokobwitungo'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
@@ -575,7 +604,7 @@ class _IDProofStepState extends State<IDProofStep> {
               ],
             ),
           ),
-          SizedBox(height: 180),
+          SizedBox(height: 80),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -584,10 +613,44 @@ class _IDProofStepState extends State<IDProofStep> {
               SizedBox(width: 10),
               ElevatedButton(
                   onPressed: () {
+                    final messenger = ScaffoldMessenger.of(context);
+                    void showError(String msg) {
+                      messenger
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(msg),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                    }
+
+                    if (_selectedCategory == null) {
+                      showError("Hitamo icyiciro cy’itungo");
+                      return;
+                    } else if (_selectedIgitsina == null) {
+                      showError("Hitamo igitsina cy’itungo");
+                      return;
+                    } else if (isUbwokobwitungoAvailable &&
+                        _selectedUbwokobwitungo == null) {
+                      showError("Hitamo ubwoko bw’itungo");
+                      return;
+                    } else if (isImyakayokororokaAvailable &&
+                        _imyakayokororokaController.text.trim().isEmpty) {
+                      showError("Imyaka yo kororoka irakenewe");
+                      return;
+                    } else if (isImyakayokororokaAvailable &&
+                        _amaeziibyariraController.text.trim().isEmpty) {
+                      showError("Amezi ibyarira arakenewe");
+                      return;
+                    }
+                    // Save only after validation passes
                     widget.formData.selectedUbwokobwitungo =
                         _selectedUbwokobwitungo;
                     widget.formData.category = _categories.firstWhere(
                         (item) => item['value'] == _selectedCategory)['text'];
+                    widget.formData.igitsina = _selectedIgitsina;
+                    widget.formData.categoryText = _selectedText;
                     widget.onNext();
                   },
                   style: ElevatedButton.styleFrom(
@@ -722,8 +785,11 @@ class IbindiDetailsStep extends StatefulWidget {
   final VoidCallback onPrevious;
   final SharedFormData formData;
 
-  const IbindiDetailsStep(
-      {super.key, required this.onPrevious, required this.formData});
+  const IbindiDetailsStep({
+    super.key,
+    required this.onPrevious,
+    required this.formData,
+  });
 
   @override
   State<IbindiDetailsStep> createState() => _IbindiDetailsStepState();
@@ -776,8 +842,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   Future<void> fetchUkozororokaList() async {
-    final response =
-        await http.get(Uri.parse('http://127.0.0.1:8080/amatungo/ukozororoka'));
+    final response = await http.get(Uri.parse(ApiUrls.Ukozororoka));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 
@@ -793,8 +858,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   Future<void> fetchUbuzimabwazoList() async {
-    final response = await http
-        .get(Uri.parse('http://127.0.0.1:8080/amatungo/ubuzimabwaryo'));
+    final response = await http.get(Uri.parse(ApiUrls.UbuzimaBwayo));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 
@@ -810,8 +874,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   Future<void> fetchIsokoryayoList() async {
-    final response =
-        await http.get(Uri.parse('http://127.0.0.1:8080/amatungo/isokoryayo'));
+    final response = await http.get(Uri.parse(ApiUrls.Isokoryayo));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 
@@ -853,7 +916,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           if (widget.formData.categoryText == 'Ihene' &&
               widget.formData.igitsina != 'Isekurume')
             _buildDropdownField(
-              "Uko yororoka *",
+              "Uko Itungo ryororoka *",
               _selectedUkozororoka,
               _ListUkozororoka.where((e) =>
                       e['text'] != 'Ni impfizi' &&
@@ -889,7 +952,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           if (widget.formData.categoryText == 'Ihene' &&
               widget.formData.igitsina == 'Isekurume')
             _buildDropdownField(
-              "Uko yororoka *",
+              "Uko Itungo ryororoka *",
               _selectedUkozororoka,
               _ListUkozororoka.where((e) =>
                       e['text'] == 'Ni isekurume' ||
@@ -905,7 +968,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           if (widget.formData.categoryText == 'Inka' &&
               widget.formData.igitsina != 'Imfizi')
             _buildDropdownField(
-              "Uko yororoka *",
+              "Uko itungo ryororoka *",
               _selectedUkozororoka,
               _ListUkozororoka.where((e) =>
                       e['text'] != 'Ni impfizi' &&
@@ -921,7 +984,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           if (widget.formData.categoryText == 'Inka' &&
               widget.formData.igitsina == 'Imfizi')
             _buildDropdownField(
-              "Uko yororoka *",
+              "Uko itungo ryororoka *",
               _selectedUkozororoka,
               _ListUkozororoka.where((e) =>
                       e['text'] == 'Ni impfizi' ||
@@ -943,6 +1006,18 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
                     e['text'] == 'Rirarwaye') //List Filtered ubuzima bwamatungo
                 .toList(),
             (val) {
+              if (_selectedUkozororoka == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Banza uhitemo uko itungo ryororoka!'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
+              // Only update state if validation passes
               setState(() {
                 _selectedUbuzimabwazo = val;
                 _IbisobanuroUbuzimabwaryoController.clear();
@@ -968,6 +1043,17 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
                     e['text'] == 'Ryaguzwe') //List Filtered  Ibijyanye n'isoko
                 .toList(), // pass the list as it is
             (val) {
+              if (_selectedUkozororoka == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Banza uhitemo uko itungo ryororoka!'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
               setState(() {
                 _selectedIsoko = val;
                 _amountController.clear();
@@ -1159,12 +1245,113 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   void _handleSubmit() async {
+    final messenger = ScaffoldMessenger.of(context);
+    void showError(String msg) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+    }
+
+    // Resolve selected texts
+    final selectedUkozororokaText = _ListUkozororoka.firstWhere(
+      (e) => e['value'] == _selectedUkozororoka,
+      orElse: () => {},
+    )['text'];
+
+    final selectedUbuzimabwaryoText = _ListUbuzimabwazo.firstWhere(
+      (e) => e['value'] == _selectedUbuzimabwazo,
+      orElse: () => {},
+    )['text'];
+
+    final selectedIsokoText = _ListIsoko.firstWhere(
+      (e) => e['value'] == _selectedIsoko,
+      orElse: () => {},
+    )['text'];
+
+    // ---- VALIDATIONS ----
+
+    // Uko yororoka
+    if (_selectedUkozororoka == null) {
+      showError("Hitamo uko itungo yororoka");
+      return;
+    }
+
+    // if ((selectedUkozororokaText == 'Ryimye' ||
+    //         selectedUkozororokaText == 'Rirahaka') &&
+    //     _ItarikiyokwimaDateController.text.trim().isEmpty) {
+    //   showError("Itariki ryimiyeho irakenewe");
+    //   return;
+    // }
+
+    // if ((selectedUkozororokaText == 'Ryabyaye' ||
+    //         selectedUkozororokaText == 'Rironsa') &&
+    //     _ItarikiRyabyariyeDateController.text.trim().isEmpty) {
+    //   showError("Itariki ryabyariyeho irakenewe");
+    //   return;
+    // }
+
+    // Itariki ryavukiyeho
+    //    if (selectedUkozororokaText == 'Ntirirakura' &&
+    //     _ItarikiRyavukiyehoDateController.text.trim().isEmpty) {
+    //   showError("Itariki ryavukiyeho irakenewe");
+    //   return;
+    //  }
+
+    else if (_selectedUbuzimabwazo == null) {
+      showError("Hitamo ubuzima bw’azo");
+      return;
+    } else if ((selectedUbuzimabwaryoText == 'Ryavunitse' ||
+            selectedUbuzimabwaryoText == 'Rirarwaye') &&
+        _IbisobanuroUbuzimabwaryoController.text.trim().isEmpty) {
+      showError("Andika ibisobanuro by'ubuzima bw’azo");
+      return;
+    } else if (_selectedIsoko == null) {
+      showError("Hitamo aho itungo ryaturutse");
+      return;
+    } else if (selectedIsokoText == 'Ryaguzwe' &&
+        _amountController.text.trim().isEmpty) {
+      showError("Shyiramo amafaranga ryaguzwe");
+      return;
+    }
+
     widget.formData.ukozruui = _selectedUkozororoka;
     widget.formData.uzmuui = _selectedUbuzimabwazo;
+    widget.formData.itariki_ryimiye =
+        _ItarikiyokwimaDateController.text.trim().isEmpty
+            ? null
+            : _ItarikiyokwimaDateController.text.trim();
+
+    widget.formData.itariki_ribyariye =
+        _ItarikiRyabyariyeDateController.text.trim().isEmpty
+            ? null
+            : _ItarikiRyabyariyeDateController.text.trim();
+
+    widget.formData.itariki_rivukiye =
+        _ItarikiRyavukiyehoDateController.text.trim().isEmpty
+            ? null
+            : _ItarikiRyavukiyehoDateController.text.trim();
+
+    widget.formData.ibisobanuro =
+        _IbisobanuroUbuzimabwaryoController.text.trim().isEmpty
+            ? null
+            : _IbisobanuroUbuzimabwaryoController.text.trim();
+
     widget.formData.selectedIsoko = _selectedIsoko;
+
+    widget.formData.amafaranga_rihagaze = _amountController.text.trim().isEmpty
+        ? null
+        : double.tryParse(_amountController.text.trim());
+
     final data = widget.formData;
-    final url = Uri.parse(
-        "http://127.0.0.1:8080/amatungo/amatungoregister/itungorishya");
+    final url = Uri.parse(ApiUrls.RegisterNewPets); //Url for  registration
+    debugFormData();
 
     final submission = FormSubmission(
       itungo: Itungo(
@@ -1176,16 +1363,22 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
       ),
       isokoryaryo: ItungoIsokoryaryo(
         itunguui: '',
-        amafaranga_rihagaze: data.amafaranga_rihagaze!,
+        amafaranga_rihagaze: data.amafaranga_rihagaze,
         isoko: data.selectedIsoko!,
       ),
       ubuzimabwaryo: ItungoUbuzimabwaryo(
         itunguui: '',
         uzmuui: data.uzmuui!,
+        ibisobanuro: data.ibisobanuro ?? '',
       ),
       ukozororoka: ItungoUkozororoka(
         itunguui: '',
         ukozruui: data.ukozruui!,
+        itari_ryimiye: data.itariki_ryimiye ?? '',
+        itariki_ribyariye: data.itariki_ribyariye ?? '',
+        itariki_rivukiye: data.itariki_rivukiye ?? '',
+        igitsina_cyavutse:
+            selectedUkozororokaText == 'Ryabyaye' ? data.igitsina : null,
       ),
     );
 
@@ -1235,6 +1428,9 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           _selectedUkozororoka = null;
           _selectedUbuzimabwazo = null;
           _selectedIsoko = null;
+          _ItarikiyokwimaDateController.clear();
+          _ItarikiRyabyariyeDateController.clear();
+          _ItarikiRyavukiyehoDateController.clear();
         });
         // Success
         print("Data submitted successfully");
@@ -1259,10 +1455,8 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           ),
         );
       }
-    } catch (e) {
-      print("Error: $e");
-      print('errorrrrrrrrrrr $e');
-      print("Submission data: ${submission.toJson()}");
+    } on Exception catch (e) {
+      print("Exception: $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1273,6 +1467,34 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           ),
         ),
       );
+    } catch (e, stackTrace) {
+      print("Unknown error: $e");
+      print("Stack trace:\n$stackTrace");
     }
+  }
+
+  void debugFormData() {
+    final formData = widget.formData; // shortcut
+
+    print("===== FORM DATA DEBUG =====");
+
+    print("selectedUbwokobwitungo: ${formData.selectedUbwokobwitungo}");
+    print("igitsina: ${formData.igitsina}");
+    print("ubukure: ${formData.ubukure}");
+    print("category: ${formData.category}");
+    print("ibara: ${formData.ibara}");
+    print("amafaranga_rihagaze: ${formData.amafaranga_rihagaze}");
+    print("selectedIsoko: ${formData.selectedIsoko}");
+    print("uzmuui: ${formData.uzmuui}");
+    print("ibisobanuro: ${formData.ibisobanuro}");
+    print("ukozruui: ${formData.ukozruui}");
+    print("itari_ryimiye: ${formData.itariki_ryimiye}");
+    print("itariki_ribyariye: ${formData.itariki_ribyariye}");
+    print("itariki_rivukiye: ${formData.itariki_rivukiye}");
+    print("igitsina_cyavutse: ${formData.igitsina}");
+    print("photoBytes: ${formData.photoBytes != null ? "has photo" : "null"}");
+    print("photoName: ${formData.photoName}");
+
+    print("===========================");
   }
 }

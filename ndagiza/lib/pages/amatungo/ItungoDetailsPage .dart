@@ -122,8 +122,8 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
             String expectedBirthDate = 'N/A';
             if (bleedingDate != null &&
                 monthsToAdd > 0 &&
-                (firstItem['igitsina']?.toUpperCase() == 'FEMALE' ||
-                    firstItem['igitsina']?.toUpperCase() == 'GORE')) {
+                (firstItem['igitsina']?.toUpperCase() == 'IJIGIJA' ||
+                    firstItem['igitsina']?.toUpperCase() == 'ISHASHI')) {
               DateTime birthDate = DateTime(
                 bleedingDate.year,
                 bleedingDate.month + monthsToAdd,
@@ -184,23 +184,23 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
             if (itarikiRyimiyeRaw.isEmpty &&
                 itarikiRibyariye.isEmpty &&
                 ubukurebwaryo >= 12 &&
-                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+                (igitsina == 'Ishashi' || igitsina == 'Ijigija')) {
               igiheRizimiraCyageze = 'Igihe cyo kwima cyarageze';
             } else if (itarikiRyimiyeRaw.isEmpty &&
                 itarikiRibyariye.isEmpty &&
                 ubukurebwaryo < 12 &&
-                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+                (igitsina == 'Ishashi' || igitsina == 'Ijigija')) {
               igiheRizimiraCyageze = 'Ntabwo irakura';
             } else if (itarikiRyimiyeRaw.isEmpty &&
                 itarikiRibyariye.isNotEmpty &&
                 monthsAfterItarikiRibyariye >= 5 &&
-                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+                (igitsina == 'Ishashi' || igitsina == 'Ijigija')) {
               igiheRizimiraCyageze = 'Igihe cyo kwima cyarageze';
               expectedBirthDate = itarikiRibyariye;
             } else if (itarikiRyimiyeRaw.isEmpty &&
                 itarikiRibyariye.isNotEmpty &&
                 monthsAfterItarikiRibyariye < 5 &&
-                (igitsina == 'FEMALE' || igitsina == 'GORE')) {
+                (igitsina == 'Ishashi' || igitsina == 'Ijigija')) {
               igiheRizimiraCyageze = 'Ironsa';
               expectedBirthDate = itarikiRibyariye;
             }
@@ -209,13 +209,13 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
                 itarikiRyimiyeRaw.isEmpty ? 'N/A' : itarikiRyimiyeRaw;
 
             if (ubukurebwaryo >= 5 &&
-                (igitsina == 'MALE' || igitsina == 'GABO')) {
+                (igitsina == 'Isekurume' || igitsina == 'Imfizi')) {
               isokostatus = 'IRAGURISHWA';
             }
 
             // Identify igiheRizabyarira value based on gender
             String breedingStatus =
-                (igitsina == "MALE") ? isokostatus : expectedBirthDate;
+                (igitsina == "Isekurume") ? isokostatus : expectedBirthDate;
 
             // now map into Itungo model
             itungo = Itungo(
@@ -284,7 +284,8 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
         title: 'IMYOROROKERE',
         icon: Icons.egg,
         iconColor: Colors.green,
-        children: itungo.igitsina.toUpperCase() == "FEMALE"
+        children: (itungo.igitsina.toUpperCase() == "IJIGIJA" ||
+                itungo.igitsina.toUpperCase() == "ISHASHI")
             ? [
                 _tableRow(
                   'RYIMYE KU WA',

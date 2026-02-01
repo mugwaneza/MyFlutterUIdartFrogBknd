@@ -33,6 +33,15 @@ Future<Response> onRequest(RequestContext context) async {
     savedPath = filePath.replaceAll(r'\', '/');
     await savedFile.writeAsBytes(await file.readAsBytes());
 
+    DateTime? parseDate(String? dateStr) {
+      if (dateStr == null || dateStr.trim().isEmpty) return null;
+      try {
+        return DateTime.parse(dateStr); // expects 'YYYY-MM-DD'
+      } catch (e) {
+        print("Invalid date format: $dateStr");
+        return null;
+      }
+    }
     print("Saved image at $savedPath");
   try {
       final result = await db.query(
@@ -77,24 +86,33 @@ Future<Response> onRequest(RequestContext context) async {
           final itunguui = userResult.first[0];
           print('returnedId $itunguui');
           dynamic ukoz = ukozororoka['ukozruui'];
-          print('ukozzzzz $ukoz');
-
 
           // Insert itungo_ukozororoka_abashumba
+           final itarikiRyimiye = parseDate(ukozororoka['itariki_ryimiye']?.toString());
+          final itarikiRibyariye = parseDate(ukozororoka['itariki_ribyariye']?.toString());
+          final itarikiRivukiye = parseDate(ukozororoka['itariki_rivukiye']?.toString());
+
+
           await ctx.query(
-            'INSERT INTO amatungo.itungo_ukozororoka_abashumba (itunguui, ukozruui) VALUES (@itunguui, @ukozruui)',
+            'INSERT INTO amatungo.itungo_ukozororoka_abashumba (itunguui, ukozruui, itariki_ryimiye, itariki_ribyariye, itariki_rivukiye, igitsina_cyavutse) VALUES (@itunguui, @ukozruui, @itariki_ryimiye, @itariki_ribyariye, @itariki_rivukiye, @igitsina_cyavutse)',
             substitutionValues: {
               'itunguui': itunguui,
               'ukozruui': ukozororoka['ukozruui'],
+              'itariki_ryimiye':itarikiRyimiye,
+              'itariki_ribyariye': itarikiRibyariye,
+              'itariki_rivukiye': itarikiRivukiye,
+              'igitsina_cyavutse': ukozororoka['igitsina_cyavutse'],
             },
           );
 
           // Insert itungoubuzimabwaryo
           await ctx.query(
-            'INSERT INTO amatungo.itungo_ubuzimabwaryo (itunguui, uzmuui) VALUES (@itunguui, @uzmuui)',
+            'INSERT INTO amatungo.itungo_ubuzimabwaryo (itunguui, uzmuui, ibisobanuro) VALUES (@itunguui, @uzmuui, @ibisobanuro)',
             substitutionValues: {
               'itunguui': itunguui,
               'uzmuui': ubuzimabwaryo['uzmuui'],
+              'ibisobanuro': ubuzimabwaryo['ibisobanuro'],
+
             },
           );
 
@@ -129,5 +147,8 @@ Future<Response> onRequest(RequestContext context) async {
       statusCode: 400,
     );
   }
+
+
+
 }
 

@@ -28,7 +28,6 @@ class NotificationItem {
 }
 
 List<Map<String, dynamic>> notificationDataList = [];
-//List<NotificationItem> notifications = [];
 
 // ------------------ ValueNotifier for notifications ------------------
 ValueNotifier<List<NotificationItem>> notificationsNotifier =
@@ -337,7 +336,7 @@ class _HomeTabState extends State<HomeTab> {
               : null;
 
           // Female logic
-          if (igitsina == 'FEMALE' || igitsina == 'GORE') {
+          if (igitsina == 'Ijigija' || igitsina == 'Ishashi') {
             final monthsOld = igihe != null
                 ? (now.year - igihe.year) * 12 +
                     (now.month - igihe.month) +
@@ -376,7 +375,8 @@ class _HomeTabState extends State<HomeTab> {
           }
 
           // Male logic
-          if (ubukure >= 5 && (igitsina == 'MALE' || igitsina == 'GABO')) {
+          if (ubukure >= 5 &&
+              (igitsina == 'Isekurume' || igitsina == 'Imfizi')) {
             fetchedNotifications.add(NotificationItem(
                 id: itunguui,
                 title: "IRAGURISHWA",

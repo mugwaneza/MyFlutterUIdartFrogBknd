@@ -1,6 +1,6 @@
 class ItungoIsokoryaryo {
   final String itunguui;
-  final double amafaranga_rihagaze;
+  final double? amafaranga_rihagaze;
   final String isoko;
 
   ItungoIsokoryaryo({
