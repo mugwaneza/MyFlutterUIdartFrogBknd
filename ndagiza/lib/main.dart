@@ -334,14 +334,17 @@ class _HomeTabState extends State<HomeTab> {
           final itarikiRibyariye = item['itariki_ribyariye'] != null
               ? DateTime.tryParse(item['itariki_ribyariye'])
               : null;
+          print('igitsina >>>>>:$igitsina');
 
           // Female logic
-          if (igitsina == 'Ijigija' || igitsina == 'Ishashi') {
+          if (igitsina == 'IJIGIJA' || igitsina == 'ISHASHI') {
             final monthsOld = igihe != null
                 ? (now.year - igihe.year) * 12 +
                     (now.month - igihe.month) +
                     ubukure
                 : ubukure;
+
+            print('Months old >>>>>: $monthsOld');
 
             if (monthsOld >= 12) {
               fetchedNotifications.add(NotificationItem(
@@ -354,7 +357,7 @@ class _HomeTabState extends State<HomeTab> {
               final monthsAfterBirth =
                   (now.year - itarikiRibyariye!.year) * 12 +
                       (now.month - itarikiRibyariye.month);
-              if (monthsAfterBirth >= 5) {
+              if (monthsAfterBirth >= 3) {
                 fetchedNotifications.add(NotificationItem(
                     id: itunguui,
                     title: "Igihe cyo Kongera kwima cyarageze",
@@ -376,7 +379,7 @@ class _HomeTabState extends State<HomeTab> {
 
           // Male logic
           if (ubukure >= 5 &&
-              (igitsina == 'Isekurume' || igitsina == 'Imfizi')) {
+              (igitsina == 'ISEKURUME' || igitsina == 'IMFIZI')) {
             fetchedNotifications.add(NotificationItem(
                 id: itunguui,
                 title: "IRAGURISHWA",
