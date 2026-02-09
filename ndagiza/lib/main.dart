@@ -7,6 +7,8 @@ import 'package:ndagiza/pages/amatungo/ItungoDetailsPage%20.dart';
 import 'package:ndagiza/pages/amatungo/kwinjiza_itungo_form.dart';
 import 'package:ndagiza/pages/aborozi/Aborozilist.dart';
 import 'package:ndagiza/statics/ApiUrls.dart';
+import 'package:ndagiza/statics/api_client.dart';
+import 'security/app_auth.dart';
 
 import 'package:flutter/material.dart';
 
@@ -34,7 +36,22 @@ ValueNotifier<List<NotificationItem>> notificationsNotifier =
     ValueNotifier<List<NotificationItem>>([]);
 
 // ------------------ MAIN APP ------------------
-void main() {
+Future<void> main() async {
+  // Ensure Flutter bindings are initialized before any async calls
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // Initialize AppAuth and fetch token
+    await AppAuth.init();
+
+    // Print token for debug
+    final token = await AppAuth.getToken();
+    print('>>>>>>> App Token: $token');
+  } catch (e) {
+    print('Error initializing AppAuth: $e');
+  }
+
+  // Run the app after token initialization
   runApp(const MyApp());
 }
 
@@ -517,7 +534,7 @@ class _HomeTabState extends State<HomeTab> {
 
   Future<void> fetchAmatungoIcyiciroList() async {
     try {
-      final response = await http.get(Uri.parse(ApiUrls.IcyiroList));
+      final response = await ApiClient.get(ApiUrls.IcyiroList);
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
