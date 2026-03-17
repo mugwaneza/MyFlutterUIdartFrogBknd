@@ -14,7 +14,12 @@ Future<Response> onRequest(RequestContext context) async {
   String? savedPath;
 
   if (file != null) {
-    final imageDir = Directory('C:/MyFlutterUIdartFrogBknd/uploads/amatungo/images');
+    // Choose directory based on platform
+    final imageDir = Platform.isWindows
+        ? Directory('C:/MyFlutterUIdartFrogBknd/uploads/amatungo/images')
+        : Directory('/home/dartapi/api/ndagiza_dartapi/uploads/amatungo/images');
+
+    // Create folder if it doesn't exist
     if (!imageDir.existsSync()) {
       imageDir.createSync(recursive: true);
     }

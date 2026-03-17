@@ -1,6 +1,6 @@
 class ApiUrls {
   // Base URL of your Dart backend
-  static const String baseUrl = 'http://127.0.0.1:8080';
+  static const String baseUrl = 'http://163.245.222.211:8080';
 
   // Auth (used ONCE)
   static const String appToken = '$baseUrl/auth/token';

@@ -4,7 +4,6 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:ndagiza_dartapi/db.dart';
 Future<Response> onRequest(RequestContext context) async {
 
-
   // Check Authorization header
   final authHeader = context.request.headers['authorization'];
   if (authHeader == null || !authHeader.startsWith('Bearer ')) {
