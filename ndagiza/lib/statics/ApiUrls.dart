@@ -33,4 +33,5 @@ class ApiUrls {
   static const String UbuzimaBwayo = '$baseUrl/amatungo/ubuzimabwaryo';
 
   static const String Isokoryayo = '$baseUrl/amatungo/isokoryayo';
+  static const String imagesdirectory = '$baseUrl/amatungo/imagesdirectory';
 }
