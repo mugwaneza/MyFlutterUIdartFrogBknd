@@ -1,6 +1,7 @@
 class ApiUrls {
   // Base URL of your Dart backend
   static const String baseUrl = 'http://163.245.222.211:8080';
+  //static const String baseUrl = 'http://127.0.0.1:8080';
 
   // Auth (used ONCE)
   static const String appToken = '$baseUrl/auth/token';
@@ -24,7 +25,7 @@ class ApiUrls {
 
   static const String IcyiciroCyamatungo = '$baseUrl/amatungo/icyiciro';
 
-  static const String Ibwokobwamatungo = '$baseUrl/amatungo/ubwokobwamatungo';
+  static const String Ibwokobwamatungo = '$baseUrl/amatungo/ubwokobwamatungo/';
 
   static const String ImyakayoKororoka = '$baseUrl/amatungo/imyakayokororoka';
 
@@ -34,4 +35,5 @@ class ApiUrls {
 
   static const String Isokoryayo = '$baseUrl/amatungo/isokoryayo';
   static const String imagesdirectory = '$baseUrl/amatungo/imagesdirectory';
+  static const String Kwinjizaborozi = '$baseUrl/aborozi/kwinjiza_aborozi';
 }

@@ -41,15 +41,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Initialize AppAuth and fetch token
     await AppAuth.init();
-
-    // Print token for debug
-    final token = await AppAuth.getToken();
-    print('>>>>>>> App Token: $token');
-  } catch (e) {
-    print('Error initializing AppAuth: $e');
-  }
+    await AppAuth.getToken();
+  } catch (e) {}
 
   // Run the app after token initialization
   runApp(const MyApp());
@@ -331,7 +325,7 @@ class _HomeTabState extends State<HomeTab> {
 // ------------------ Fetch Notifications ------------------
   Future<void> fetchItungoImyororokereList() async {
     try {
-      final response = await http.get(Uri.parse(ApiUrls.NotificationListApi));
+      final response = await ApiClient.get(ApiUrls.NotificationListApi);
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         final List<dynamic> data = decoded is List ? decoded : [];
@@ -577,10 +571,7 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
   }
 
   Future<void> fetchAmatungoList() async {
-    final response = await http.get(
-      Uri.parse(ApiUrls.fetchListAmatungo),
-    );
-
+    final response = await ApiClient.get(ApiUrls.fetchListAmatungo);
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 

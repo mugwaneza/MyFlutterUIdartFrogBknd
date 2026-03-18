@@ -14,6 +14,7 @@ import 'dart:typed_data';
 import 'package:ndagiza/models/itungo_ubuzimabwaryo_model.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:ndagiza/statics/ApiUrls.dart';
+import 'package:ndagiza/statics/api_client.dart';
 import 'package:path/path.dart' as path;
 import 'dart:typed_data';
 
@@ -426,7 +427,7 @@ class _IDProofStepState extends State<IDProofStep> {
   Future<void> fetchIcyiciroList() async {
     // get list of icyiciro cy'inka
     try {
-      final response = await http.get(Uri.parse(ApiUrls.IcyiciroCyamatungo));
+      final response = await ApiClient.get(ApiUrls.IcyiciroCyamatungo);
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
@@ -452,8 +453,9 @@ class _IDProofStepState extends State<IDProofStep> {
         _ubwokobwitungo.clear(); // Clear while waiting
         isUbwokobwitungoAvailable = false;
       });
-      final response = await http
-          .get(Uri.parse('${ApiUrls.Ibwokobwamatungo}/$_selectedCategory'));
+
+      final response =
+          await ApiClient.get(ApiUrls.Ibwokobwamatungo + '$_selectedCategory');
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
@@ -484,8 +486,9 @@ class _IDProofStepState extends State<IDProofStep> {
         _imyakayokororokaController.clear(); // Clear while waiting
         isImyakayokororokaAvailable = false;
       });
-      final response = await http.get(
-          Uri.parse('${ApiUrls.ImyakayoKororoka}/$_selectedUbwokobwitungo'));
+
+      final response = await ApiClient.get(
+          ApiUrls.ImyakayoKororoka + '$_selectedUbwokobwitungo');
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
@@ -841,7 +844,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   Future<void> fetchUkozororokaList() async {
-    final response = await http.get(Uri.parse(ApiUrls.Ukozororoka));
+    final response = await ApiClient.get(ApiUrls.Ukozororoka);
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 
@@ -857,7 +860,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   Future<void> fetchUbuzimabwazoList() async {
-    final response = await http.get(Uri.parse(ApiUrls.UbuzimaBwayo));
+    final response = await ApiClient.get(ApiUrls.UbuzimaBwayo);
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 
@@ -873,7 +876,7 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   Future<void> fetchIsokoryayoList() async {
-    final response = await http.get(Uri.parse(ApiUrls.Isokoryayo));
+    final response = await ApiClient.get(ApiUrls.Isokoryayo);
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 

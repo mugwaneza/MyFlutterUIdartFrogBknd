@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ndagiza/statics/ApiUrls.dart';
+import 'package:ndagiza/statics/api_client.dart';
 
 class Guhuza_amatungo_aborozi extends StatefulWidget {
   final Map<String, dynamic> clickedItem;
@@ -42,7 +43,7 @@ class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
 
   Future<void> fetchAboroziList() async {
     try {
-      final response = await http.get(Uri.parse(ApiUrls.fetchListAborozi));
+      final response = await ApiClient.get(ApiUrls.fetchListAborozi);
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         final List<dynamic> data = decoded is List ? decoded : [];
@@ -257,7 +258,6 @@ class _GuhuzaAmatungoAboroziState extends State<Guhuza_amatungo_aborozi> {
 
   void RagizaItungo() async {
     final uri = Uri.parse(ApiUrls.postIndagizo);
-
     try {
       // Send JSON instead of multipart
       final response = await http.post(

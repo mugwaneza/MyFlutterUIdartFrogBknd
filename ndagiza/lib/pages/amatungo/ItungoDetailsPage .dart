@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ndagiza/statics/ApiUrls.dart';
+import 'package:ndagiza/statics/api_client.dart';
 
 // Main Stateful Widget
 class ItungoDetailsPage extends StatefulWidget {
@@ -32,8 +33,8 @@ class _ItungoDetailsPageState extends State<ItungoDetailsPage> {
     try {
       final itunguui = widget.clickedItem['itunguui']?.toString() ?? '';
       if (itunguui.isEmpty) return;
-      final response =
-          await http.get(Uri.parse(ApiUrls.ImyorkrList + '$itunguui'));
+
+      final response = await ApiClient.get(ApiUrls.ImyorkrList + '$itunguui');
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);

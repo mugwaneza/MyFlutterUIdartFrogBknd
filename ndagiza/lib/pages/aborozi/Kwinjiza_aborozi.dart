@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart'; // for kIsWeb
 
 import 'package:ndagiza/pages/aborozi/Aborozilist.dart';
+import 'package:ndagiza/statics/ApiUrls.dart';
 
 class Kwinjiza_aborozi extends StatefulWidget {
   const Kwinjiza_aborozi({super.key});
@@ -386,7 +387,7 @@ class _KwinjizaAboroziState extends State<Kwinjiza_aborozi> {
   }
 
   void _handleSubmit() async {
-    final uri = Uri.parse('http://127.0.0.1:8080/aborozi/kwinjiza_aborozi');
+    final uri = Uri.parse(ApiUrls.Kwinjizaborozi);
     var request = http.MultipartRequest('POST', uri);
 
     // Add text fields

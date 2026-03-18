@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:ndagiza/statics/ApiUrls.dart';
+import 'package:ndagiza/statics/api_client.dart';
 
 class AboroziList extends StatefulWidget {
   const AboroziList({super.key});
@@ -24,10 +25,7 @@ class _AboroziListState extends State<AboroziList> {
   }
 
   Future<void> fetchAboroziList() async {
-    final response = await http.get(
-      Uri.parse(ApiUrls.fetchListAborozi),
-    );
-
+    final response = await ApiClient.get(ApiUrls.fetchListAborozi);
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
 
