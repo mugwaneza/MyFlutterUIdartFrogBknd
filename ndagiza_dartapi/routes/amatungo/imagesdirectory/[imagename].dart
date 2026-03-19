@@ -2,20 +2,16 @@ import 'dart:io';
 import 'package:dart_frog/dart_frog.dart';
 import 'package:mime/mime.dart';
 
-Future<Response> onRequest(RequestContext context,dynamic imagename) async {
+Future<Response> onRequest(RequestContext context,String imagename) async {
   // Get the image name from the URL path
  // print('Requested image: $imagename');
 
-  final imageDir = Platform.isWindows
-      ? Directory('C:/MyFlutterUIdartFrogBknd/uploads/amatungo/images/$imagename')
-      : Directory('/home/dartapi/api/ndagiza_dartapi/uploads/amatungo/images/$imagename');
+  final basePath = Platform.isWindows
+      ? 'C:/MyFlutterUIdartFrogBknd/uploads/amatungo/images'
+      : '/home/dartapi/api/ndagiza_dartapi/uploads/amatungo/images';
 
-  // Create folder if it doesn't exist
-  if (!imageDir.existsSync()) {
-    imageDir.createSync(recursive: true);
-  }
 
-  final file = File(imageDir.path);
+  final file = File('$basePath/$imagename');
 
   if (await file.exists()) {
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
@@ -24,6 +20,8 @@ Future<Response> onRequest(RequestContext context,dynamic imagename) async {
       body: bytes,
       headers: {
         'Content-Type': mimeType,
+        'Cache-Control': 'public, max-age=3600', // optional caching
+
       },
     );
   } else {

@@ -34,6 +34,8 @@ Future<Response> onRequest(RequestContext context) async {
     final filename =
         '${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}.$extension';
     final filePath = p.join(imageDir.path, filename);
+
+
     final savedFile = File(filePath);
     savedPath = filePath.replaceAll(r'\', '/');
     await savedFile.writeAsBytes(await file.readAsBytes());
@@ -79,7 +81,7 @@ Future<Response> onRequest(RequestContext context) async {
             substitutionValues: {
               'itunguui_imyruui': itungo['itunguui_imyruui'],
               'igitsina': itungo['igitsina'],
-              'ifoto_url': filePath,
+              'ifoto_url': filename,
               'ubukure': itungo['ubukure'],
               'itngcode': itngcode,
               'ibara': itungo['ibara']

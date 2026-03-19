@@ -660,6 +660,8 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
                 final guardianPresent = itungo['guardian'] != null &&
                     itungo['guardian']!.trim().isNotEmpty;
 
+                print(itungo['image']!);
+
                 return InkWell(
                   onTap: () {
                     if (guardianPresent) {
