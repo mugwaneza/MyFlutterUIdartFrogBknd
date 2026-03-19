@@ -79,7 +79,7 @@ Future<Response> onRequest(RequestContext context) async {
             substitutionValues: {
               'itunguui_imyruui': itungo['itunguui_imyruui'],
               'igitsina': itungo['igitsina'],
-              'ifoto_url': filename,
+              'ifoto_url': filePath,
               'ubukure': itungo['ubukure'],
               'itngcode': itngcode,
               'ibara': itungo['ibara']

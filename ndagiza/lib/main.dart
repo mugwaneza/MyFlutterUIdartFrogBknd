@@ -580,7 +580,7 @@ class _AnimalsGuardiansState extends State<AnimalsGuardians> {
             .map((item) => {
                   'itunguui': '${item['itunguui'] ?? ''}',
                   'image':
-                      '${ApiUrls.imagesdirectory}/${item['ifoto_url'] ?? ''}',
+                      ApiUrls.imagesdirectory + '${item['ifoto_url'] ?? ''}',
                   'name': '${item['ibara'] ?? ''}',
                   'price': '${item['amafaranga_rihagaze'] ?? ''}',
                   'reproduction': '${item['ubwokobwitungo'] ?? ''}',

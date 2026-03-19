@@ -798,6 +798,8 @@ class IbindiDetailsStep extends StatefulWidget {
 }
 
 class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
+  bool _isSubmitting = false;
+  double _progress = 0.0;
   String? _selectedUkozororoka;
   String? _selectedUbuzimabwazo;
   String? _selectedIsoko;
@@ -1073,20 +1075,50 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
               ],
             ),
           SizedBox(height: 70),
+          // Show progress indicator in your UI
+          if (_isSubmitting) ...[
+            LinearProgressIndicator(value: _progress),
+            const SizedBox(height: 10),
+            Text('${(_progress * 100).toStringAsFixed(0)} %'),
+            const SizedBox(height: 10),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                  onPressed: widget.onPrevious, child: Text("Subira inyuma")),
-              SizedBox(width: 10),
+                onPressed: widget.onPrevious,
+                child: const Text("Subira inyuma"),
+              ),
+              const SizedBox(width: 10),
               ElevatedButton(
-                  onPressed: _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 20, 105, 20),
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                  ),
-                  child:
-                      Text("Ohereza", style: TextStyle(color: Colors.white))),
+                onPressed: _isSubmitting
+                    ? null
+                    : _handleSubmit, // Disable while submitting
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 20, 105, 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                ),
+                child: _isSubmitting
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text("Ohereza...",
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      )
+                    : const Text("Ohereza",
+                        style: TextStyle(color: Colors.white)),
+              ),
             ],
           ),
         ],
@@ -1247,6 +1279,8 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
   }
 
   void _handleSubmit() async {
+    if (_isSubmitting) return; //  prevents duplicate calls immediately
+
     final messenger = ScaffoldMessenger.of(context);
     void showError(String msg) {
       messenger
@@ -1353,8 +1387,6 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
 
     final data = widget.formData;
     final url = Uri.parse(ApiUrls.RegisterNewPets); //Url for  registration
-    debugFormData();
-
     final submission = FormSubmission(
       itungo: Itungo(
         itunguui_imyruui: data.selectedUbwokobwitungo,
@@ -1385,6 +1417,11 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
     );
 
     try {
+      setState(() {
+        _isSubmitting = true;
+        _progress = 0.0;
+      });
+
       final request = http.MultipartRequest('POST', url);
       //Add JSON body as a field
       request.fields['itungo'] = jsonEncode(submission.itungo.toJson());
@@ -1405,35 +1442,27 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
         );
       }
       final response = await request.send();
-      final responseBody = await response.stream.bytesToString();
+// Track progress while receiving response
+      final total = response.contentLength ?? 0;
+      int received = 0;
 
+      final responseBytes = <int>[];
+      await for (var chunk in response.stream) {
+        responseBytes.addAll(chunk);
+        received += chunk.length;
+        if (total != 0) {
+          setState(() {
+            _progress = received / total;
+          });
+        }
+      }
+      final responseBody = utf8.decode(responseBytes);
       print("Status code: ${response.statusCode}");
       print("Response body: $responseBody");
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         //  Reset fields
-        setState(() {
-          widget.formData.igitsina = null;
-          widget.formData.photoPath = null;
-          widget.formData.ubukure = null;
-          widget.formData.category = '';
-          data.ibara = null;
-          widget.formData.amafaranga_rihagaze = null;
-          widget.formData.selectedUbwokobwitungo = null;
-          widget.formData.selectedIsoko = null;
-          widget.formData.uzmuui = null;
-          widget.formData.ukozruui = null;
-          setState(() {
-            widget.formData.photoPath = null;
-            widget.formData.photoBytes = null;
-          });
-          _selectedUkozororoka = null;
-          _selectedUbuzimabwazo = null;
-          _selectedIsoko = null;
-          _ItarikiyokwimaDateController.clear();
-          _ItarikiRyabyariyeDateController.clear();
-          _ItarikiRyavukiyehoDateController.clear();
-        });
+
         // Success
         print("Data submitted successfully");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1445,6 +1474,10 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
             ),
           ),
         );
+
+        // Reset form
+        _resetForm();
+        // debugFormData();
       } else {
         // Error
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1469,34 +1502,62 @@ class _IbindiDetailsStepState extends State<IbindiDetailsStep> {
           ),
         ),
       );
-    } catch (e, stackTrace) {
-      print("Unknown error: $e");
-      print("Stack trace:\n$stackTrace");
+    } finally {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _progress = 0.0;
+        });
+      }
     }
+  }
+
+  // Helper to reset your form
+  void _resetForm() {
+    setState(() {
+      widget.formData.igitsina = null;
+      widget.formData.photoPath = null;
+      widget.formData.ubukure = null;
+      widget.formData.category = '';
+      widget.formData.ibara = null;
+      widget.formData.amafaranga_rihagaze = null;
+      widget.formData.selectedUbwokobwitungo = null;
+      widget.formData.selectedIsoko = null;
+      widget.formData.uzmuui = null;
+      widget.formData.ukozruui = null;
+      widget.formData.photoBytes = null;
+
+      _selectedUkozororoka = null;
+      _selectedUbuzimabwazo = null;
+      _selectedIsoko = null;
+
+      _ItarikiyokwimaDateController.clear();
+      _ItarikiRyabyariyeDateController.clear();
+      _ItarikiRyavukiyehoDateController.clear();
+    });
   }
 
   void debugFormData() {
     final formData = widget.formData; // shortcut
 
-    print("===== FORM DATA DEBUG =====");
-
-    print("selectedUbwokobwitungo: ${formData.selectedUbwokobwitungo}");
-    print("igitsina: ${formData.igitsina}");
-    print("ubukure: ${formData.ubukure}");
-    print("category: ${formData.category}");
-    print("ibara: ${formData.ibara}");
-    print("amafaranga_rihagaze: ${formData.amafaranga_rihagaze}");
-    print("selectedIsoko: ${formData.selectedIsoko}");
-    print("uzmuui: ${formData.uzmuui}");
-    print("ibisobanuro: ${formData.ibisobanuro}");
-    print("ukozruui: ${formData.ukozruui}");
-    print("itari_ryimiye: ${formData.itariki_ryimiye}");
-    print("itariki_ribyariye: ${formData.itariki_ribyariye}");
-    print("itariki_rivukiye: ${formData.itariki_rivukiye}");
-    print("igitsina_cyavutse: ${formData.igitsina}");
-    print("photoBytes: ${formData.photoBytes != null ? "has photo" : "null"}");
-    print("photoName: ${formData.photoName}");
-
-    print("===========================");
+    // print("===== FORM DATA DEBUG =====");
+    // print("selectedUbwokobwitungo: ${formData.selectedUbwokobwitungo}");
+    // print("igitsina: ${formData.igitsina}");
+    // print("ubukure: ${formData.ubukure}");
+    // print("category: ${formData.category}");
+    // print("ibara: ${formData.ibara}");
+    // print("amafaranga_rihagaze: ${formData.amafaranga_rihagaze}");
+    // print("selectedIsoko: ${formData.selectedIsoko}");
+    // print("uzmuui: ${formData.uzmuui}");
+    // print("ibisobanuro: ${formData.ibisobanuro}");
+    // print("ukozruui: ${formData.ukozruui}");
+    // print("itari_ryimiye: ${formData.itariki_ryimiye}");
+    // print("itariki_ribyariye: ${formData.itariki_ribyariye}");
+    // print("itariki_rivukiye: ${formData.itariki_rivukiye}");
+    // print("igitsina_cyavutse: ${formData.igitsina}");
+    // print("photoBytes: ${formData.photoBytes != null ? "has photo" : "null"}");
+    // print("photoName: ${formData.photoName}");
+    //print("===========================");
   }
 }
