@@ -26,7 +26,12 @@ Future<Response> onRequest(RequestContext context) async {
   final ahoatuye = formData.fields['ahoatuye'];
 
   // Define storage paths
-  final basePath = Directory('C:/MyFlutterUIdartFrogBknd/uploads/aborozi'); // Adjust as needed
+  // Choose directory based on platform
+  final basePath = Platform.isWindows
+      ? Directory('C:/MyFlutterUIdartFrogBknd/uploads/aborozi')
+      : Directory('/home/dartapi/api/ndagiza_dartapi/uploads/aborozi');
+
+  if (!basePath.existsSync()) {basePath.createSync(recursive: true);}
   final imageDir = Directory(p.join(basePath.path, 'images'));
   final docsDir = Directory(p.join(basePath.path, 'docs'));
 
@@ -35,8 +40,6 @@ Future<Response> onRequest(RequestContext context) async {
 
   final now = DateTime.now();
   final timestamp ='${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}';
-  final stat_filepath = "C:/MyFlutterUIdartFrogBknd/uploads/aborozi/docs/";
-  final stat_imagepath = "C:/MyFlutterUIdartFrogBknd/uploads/aborozi/images/";
 
   // Save image
   String? imagePath;
@@ -47,7 +50,7 @@ Future<Response> onRequest(RequestContext context) async {
     final nameWithoutExtension = p.basenameWithoutExtension(imageFile.name ?? 'unnamed');
     final extension = p.extension(imageFile.name ?? '');
     final imageName = '${nameWithoutExtension}_$timestamp$extension';
-    final Path = p.join(stat_imagepath, imageName);
+    final Path = p.join(imageDir.path, imageName);
     await File(Path).writeAsBytes(await imageFile.readAsBytes());
     imagePath = Path;
   }
@@ -65,7 +68,7 @@ Future<Response> onRequest(RequestContext context) async {
     final extension = p.extension(doc.name ?? '');
     final fileName = '${nameWithoutExtension}_$timestamp$extension';
 
-    final docPath = p.join(stat_filepath, fileName);
+    final docPath = p.join(docsDir.path, fileName);
 
     final file = File(docPath);
     final bytes = await doc.readAsBytes();
